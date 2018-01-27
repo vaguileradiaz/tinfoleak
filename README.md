@@ -21,3 +21,6 @@ sudo pip install --upgrade oauth2
 ```
 
 ### Getting started
+<p align="center">
+  <img src="https://github.com/vaguileradiaz/tinfoleak/blob/master/doc/images/tinfoleak-noparameters.png" width="350"/>
+</p>
