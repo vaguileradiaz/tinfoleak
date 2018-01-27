@@ -1,0 +1,2525 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,400italic,700,700italic,300italic,300' rel='stylesheet' type='text/css'>
+<link href="style.css" rel='stylesheet' type='text/css'>
+<script src="js/Chart.bundle.js"></script>
+<title>Tinfoleak Report</title>
+
+</head>
+
+<body>
+<!--cabecera-->
+    <div class="header">
+		<p class="datos_personales"><a href="https://twitter.com/VAguileraDiaz" target="_blank">@VAguileraDiaz</a> <a href="mailto:vaguilera@isecauditors.com" target="_blank">vaguilera@isecauditors.com</a> <a href="http://www.isecauditors.com" target="_blank">Internet Security Auditors</a> {{ version }}</p>
+	</div>
+    <!--#end cabecera-->
+    <!--contenido-->
+<a id="top" name="top"></a>
+<div id="container">    
+    <div id="content">
+    	<div id="title">
+        	<!--<h4>{{ program }} {{ version }}</h4>-->
+            <img src="img/tinfoleak_logo.png" width="230" class="logo"/>
+        </div>
+    	<div id="foto_perfil">
+        	<a href="{{ profile_image.replace('.jpg', '_400x400.jpg') }}" target="_blank"><img class="perfil" src="{{ profile_image.replace('.jpg', '_400x400.jpg') }}" target="_blank" alt="usuario" width="100" height="100"></a><br />
+            <h1>{{ user_name }}</h1>
+             <p class="descripcion">{{ description }}</span></p>
+             
+             <center><p class="datos_perfil">Followers: <span><a href="http://www.twitter.com/{{ screen_name }}/followers" target="_blank">{{ followers }}</a></span> | Friends: <span><a href="http://www.twitter.com/{{ screen_name }}/following" target="_blank">{{ friends }}</a></span> | Likes: <span><a href="http://www.twitter.com/{{ screen_name }}/likes" target="_blank">{{ favourites_count }}</a> ({{ likes_average }} likes/day)</span> | Tweets: <span><a href="http://www.twitter.com/{{ screen_name }}/tweets" target="_blank">{{ tweets }}</a> ({{ tweets_average }} tweets/day)</span></p></center>
+             
+        </div><!--#end foto_perfil-->
+        
+        <div id="datos_usuario">
+            <div class="datos1">
+              <p class="datos_perfil">Screen Name: <a href="http://www.twitter.com/{{ screen_name }}" target="_blank">{{ screen_name }}</a></p>
+              <br /><hr style="border: 0; border-bottom: 1px dashed #ccc; width:221px; margin-top: -15px; margin-left: 0;"/>
+              <p class="datos_perfil">Account Created at: <span>{{ date }}</span></p>
+              <br /><hr style="border: 0; border-bottom: 1px dashed #ccc; width:221px; margin-top: -15px; margin-left: 0;"/>
+              <p class="datos_perfil">Verified: <span>{{ verified }}</span></p>
+              <br /><hr style="border: 0; border-bottom: 1px dashed #ccc; width:221px; margin-top: -15px; margin-left: 0;"/>
+              <p class="datos_perfil">Protected Account: <span>{{ protected }}</span></p>
+              <br /><hr style="border: 0; border-bottom: 1px dashed #ccc; width:221px; margin-top: -15px; margin-left: 0;"/>
+                <p class="datos_perfil">Twitter ID: <span>{{ twitter_id }}</span></p>
+              <br /><hr style="border: 0; border-bottom: 1px dashed #ccc; width:221px; margin-top: -15px; margin-left: 0;"/>
+	      {% if url %}
+              	<p class="datos_perfil">URL: <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+	      {% else %}
+              	<p class="datos_perfil">URL: </p>	
+	      {% endif %}
+          <br /><hr style="border: 0; border-bottom: 1px dashed #ccc; width:221px; margin-top: -15px; margin-left: 0;"/>
+              <p class="datos_perfil">Location: <span>{{ location }}</span></p>
+              <br /><hr style="border: 0; border-bottom: 1px dashed #ccc; width:221px; margin-top: -15px; margin-left: 0;"/>
+              <p class="datos_perfil">Time Zone: <span>{{ timezone }}</span></p>
+              <br /><hr style="border: 0; border-bottom: 1px dashed #ccc; width:221px; margin-top: -15px; margin-left: 0;"/>
+              <p class="datos_perfil">Geo enabled: <span>{{ geo }}</span></p>
+              <br /><hr style="border: 0; border-bottom: 1px dashed #ccc; width:221px; margin-top: -15px; margin-left: 0;"/>
+              <p class="datos_perfil">Listed count: <span>{{ listed_count }}</span></p>
+              <br /><hr style="border: 0; border-bottom: 1px dashed #ccc; width:221px; margin-top: -15px; margin-left: 0;"/>
+              <p class="datos_perfil">Language: <span>{{ lang }}</span></p>
+            </div>
+
+      </div>
+    </div><!--#end content-->
+
+
+<table align="center">
+<tr>
+<td>
+<canvas id="myChartFollowersFriends" width="180" height="140" style="border:1px solid #c3c3c3;float:left;margin-right:20px;margin-bottom:15px"></canvas>
+</td>
+<td>
+<canvas id="myChartTweetsLikes" width="180" height="140" style="border:1px solid #c3c3c3;float:right;margin-left:20px;margin-bottom:15px"></canvas>
+</td>
+<td>
+<canvas id="myChartTweetsLikesAverage" width="180" height="140" style="border:1px solid #c3c3c3;float:right;margin-left:20px;margin-bottom:15px"></canvas>
+</td>
+</tr>
+</table>
+
+<script>
+var ctx = document.getElementById("myChartFollowersFriends").getContext('2d');
+
+var myChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: [ 
+        'Followers', 'Friends' 
+        ],
+        datasets: [{
+            label: 'Followers vs Friends',
+            backgroundColor: [
+            "#3cde9f", "#FF8063"
+            ],
+            data: [
+          '{{ followers.replace(',','') }}', '{{ friends.replace(',','') }}'      
+            ]
+        }]
+    },
+  options: {
+      title: {
+        display: true,
+        text: 'Followers vs Friends'
+      }
+    }
+    });
+
+var ctx2 = document.getElementById("myChartTweetsLikes").getContext('2d');
+
+var myChart2 = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+      labels: [ 
+        'Tweets', 'Likes'
+        ],
+        datasets: [{
+            label: 'Tweets vs Likes',
+            backgroundColor: [
+            "#FFA700", "#15B8CE"
+            ],
+            data: [
+            '{{ tweets.replace(',','') }}', '{{ favourites_count.replace(',','') }}'
+            ]
+        }]
+    },
+  options: {
+      title: {
+        display: true,
+        text: 'Tweets vs Likes'
+      }
+    }
+    });
+
+var ctx3 = document.getElementById("myChartTweetsLikesAverage").getContext('2d');
+
+var myChart3 = new Chart(ctx3, {
+    type: 'bar',
+    data: {
+      labels: [],
+        datasets: [{
+            label: 'Tweets',
+            backgroundColor: ["#FFA700"],
+            borderColor: ["#FFA700"],
+            borderWidth: 2,
+            data: ['{{ tweets_average }}']
+        },{
+            label: 'Likes',
+            backgroundColor: ["#15B8CE"],
+            borderColor: ["#15B8CE"],
+            borderWidth: 2,
+            data: ['{{ likes_average }}']        
+        }]
+    },
+  options: {
+      title: {
+        display: true,
+        text: 'Tweets/day vs Likes/day'
+      }
+    }
+    });
+
+
+</script>
+
+        <br>
+    
+      <div id="datos" width="970"> <!--# menu-->
+        <div id="client_apps">
+            <div class="one_third"> 
+            <center>
+            <ul class="button">
+        <li><a href="#activity">User Activity</a></li>
+				<li><a href="#client_apps">Source Apps</a></li>
+				<li><a href="#social">Social ID</a></li>
+				<li><a href="#hashtags">Hashtags</a></li>
+				<li><a href="#user_mentions">Mentions</a></li>
+        <li><a href="#favourites">Likes</a></li>
+				<li><a href="#tweets">Tweets</a></li>
+        <li><a href="#topwords">Words Frequency</a></li>
+				<li><a href="#metadata">Metadata</a></li>
+
+			</ul>
+                <br>
+              <ul class="button">
+				<li><a href="#media">Media</a></li>
+				<li><a href="#geo">Geolocation</a></li>
+				<li><a href="#search">Places</a></li>
+        <li><a href="#conversation">Conversations</a></li>
+                  <li><a href="#protected">Protected Account</a></li>
+			</ul>
+        </center>
+        </div>
+
+       </div> <!--# end menu-->
+
+        <div id="datos">
+
+            <div id="client_args">
+                <a id="client_args" name="client_args"></a>
+                <h3>Tinfoleak Arguments</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p><font color="white">ARGUMENTS</font></p></td>
+                      <td><p><font color="white">OPERATING SYSTEM</font></p></td>
+                    </tr>
+                    <tr>
+                      <td><p class="table_results">
+                        {{ argv }}
+                      </p></td>
+                      <td><p class="table_results">{{ os_name }} - {{ os_platform }}</p></td>
+                    </tr>
+                </table>
+
+            </div><!--#end client_args-->
+            <br>
+
+            <div id="client_activity">
+                <a id="client_activity" name="client_activity"></a>
+                <h3>Timeline Activity</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_activity %}
+                <table class="client_activity" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+                <table class="client_activity" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="center"><font color="white">TYPE</font></p></td>
+                      <td><p align="center"><font color="white">NUMBER</font></p></td>
+                      <td><p align="center"><font color="white">PERCENTAGE</font></p></td>
+                    </tr>
+
+                    <tr>
+                      <td><p class="table_results" align="center">Tweet</p></td>
+                      <td><p class="table_results" align="center">{{ activity_tweet }}</p></td>
+                      <td><p class="table_results" align="center">{{ activity_tweet_percent }}%</p></td>
+                    </tr>
+
+                    <tr>
+                      <td><p class="table_results" align="center">Retweet</p></td>
+                      <td><p class="table_results" align="center">{{ activity_retweet }}</p></td>
+                      <td><p class="table_results" align="center">{{ activity_retweet_percent }}%</p></td>                    
+                    </tr>
+
+                    <tr>
+                      <td><p class="table_results" align="center">URL</p></td>
+                      <td><p class="table_results" align="center">{{ activity_url }}</p></td>
+                      <td><p class="table_results" align="center">{{ activity_url_percent }}%</p></td>
+                    </tr>
+
+                    <tr>
+                      <td><p class="table_results" align="center">Media</p></td>
+                      <td><p class="table_results" align="center">{{ activity_media }}</p></td>
+                      <td><p class="table_results" align="center">{{ activity_media_percent }}%</p></td>
+                    </tr>
+
+                </table>
+                <p class="results">Total: {{ activity_count }} results.</p>
+
+
+
+<canvas id="chart-clientactivity" width="50" height="12"></canvas>
+<script>
+var ctx = document.getElementById("chart-clientactivity").getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'horizontalBar',
+    data: {
+      labels: [ 
+        'Tweets',
+        'Retweets',
+        'URL',
+        'Media'
+        ],
+        datasets: [{
+            label: 'Number of uses',
+            data: [
+              {{ activity_tweet }},
+              {{ activity_retweet }},
+              {{ activity_url }},
+              {{ activity_media }}
+            ],
+            backgroundColor: [
+              "#3cde9f",
+              "#3cde9f",
+              "#3cde9f",
+              "#3cde9f"
+            ],
+            borderColor: [
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        },
+    title: {
+        display: true,
+          text: 'Timeline Activity'
+        }
+    }
+});
+
+</script>
+
+
+
+<canvas id="chart-clientactivityhours" width="50" height="20"></canvas>
+<script>
+var ctx = document.getElementById("chart-clientactivityhours").getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [ 
+        '00h',
+        '01h',
+        '02h',
+        '03h',
+        '04h',
+        '05h',
+        '06h',
+        '07h',
+        '08h',
+        '09h',
+        '10h',
+        '11h',
+        '12h',
+        '13h',
+        '14h',
+        '15h',
+        '16h',
+        '17h',
+        '18h',
+        '19h',
+        '20h',
+        '21h',
+        '22h',
+        '23h',
+        ],
+        datasets: [{
+            label: 'Number of tweets',
+            data: [
+              {{ activity_hours["00"] }},
+              {{ activity_hours["01"] }},
+              {{ activity_hours["02"] }},
+              {{ activity_hours["03"] }},
+              {{ activity_hours["04"] }},
+              {{ activity_hours["05"] }},
+              {{ activity_hours["06"] }},
+              {{ activity_hours["07"] }},
+              {{ activity_hours["08"] }},
+              {{ activity_hours["09"] }},
+              {{ activity_hours["10"] }},
+              {{ activity_hours["11"] }},
+              {{ activity_hours["12"] }},
+              {{ activity_hours["13"] }},
+              {{ activity_hours["14"] }},
+              {{ activity_hours["15"] }},
+              {{ activity_hours["16"] }},
+              {{ activity_hours["17"] }},
+              {{ activity_hours["18"] }},
+              {{ activity_hours["19"] }},
+              {{ activity_hours["20"] }},
+              {{ activity_hours["21"] }},
+              {{ activity_hours["22"] }},
+              {{ activity_hours["23"] }}              
+            ],
+            backgroundColor: [
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE",
+              "#15B8CE"
+            ],
+            borderColor: [
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        },
+    title: {
+        display: true,
+          text: 'Activity by hours'
+        }
+    }
+});
+
+</script>
+
+
+
+                
+                {% endif %}
+            </div><!--#end client_activity-->
+            <br>
+
+
+
+            <div id="client_apps">
+                <a id="client_apps" name="client_apps"></a>
+                <h3>Client Applications</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_source %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="center"><font color="white">SOURCE</font></p></td>
+                      <td><p align="center"><font color="white">USES</font></p></td>
+                      <td><p align="center"><font color="white">PERCENTAGE</font></p></td>
+                      <td><p align="center"><font color="white">FIRST USE</font></p></td>
+                      <td><p align="center"><font color="white">FIRST TWEET</font></p></td>
+                      <td><p align="center"><font color="white">LAST USE</font></p></td>
+                      <td><p align="center"><font color="white">LAST TWEET</font></p></td>
+                    </tr>
+
+                    {% for info in source %}    
+                    <tr>
+                      <td><p class="table_results" align="center">{{ info[0] }}</p></td>
+                      <td><p class="table_results" align="center">{{ sources_count[info[0]] }}</p></td>
+                      <td><p class="table_results" align="center">{{ sources_percent[info[0]] }} %</p></td>
+                      {% if sources_firsttweet[info[0]] %}
+                        <td><p class="table_results" align="center">{{ sources_firstdate[info[0]].strftime('%m/%d/%Y') }}</p></td>
+                        <td><p class="table_results" align="center"><a href="https://twitter.com/{{ screen_name }}/status/{{ sources_firsttweet[info[0]] }}" target="_blank">view</a></p></td>
+                      {% else %}
+                        <td><p class="table_results" align="center">-</p></td>
+                        <td><p class="table_results" align="center">-</p></td>
+                      {% endif %}
+                      <td><p class="table_results" align="center">{{ sources_lastdate[info[0]].strftime('%m/%d/%Y') }}</p></td>
+                      <td><p class="table_results" align="center"><a href="https://twitter.com/{{ screen_name }}/status/{{ sources_lasttweet[info[0]] }}" target="_blank">view</a></p></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                <p class="results">Total: {{ sources_results }} results.</p>
+
+
+
+<canvas id="chart-clientapplications" width="50" height="{{ 5 + (2.5*sources_results) }}"></canvas>
+<script>
+var ctx = document.getElementById("chart-clientapplications").getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'horizontalBar',
+    data: {
+    	labels: [ 
+	    	{% for info in source %}
+	    	'{{ info[0] }}',
+	    	{% endfor %} 
+	    	],
+        datasets: [{
+            label: 'Number of uses',
+            data: [
+		        {% for info in source %}
+		    	{{ sources_count[info[0]] }},
+		    	{% endfor %}     
+		        ],
+            backgroundColor: [
+		        {% for info in source %}
+				"#3cde9f",
+		    	{% endfor %}     
+            ],
+            borderColor: [
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        },
+		title: {
+    		display: true,
+        	text: 'Client Applications'
+        }
+    }
+});
+
+
+</script>
+
+			          
+                {% endif %}
+            </div><!--#end client_apps-->
+
+
+            <!--social table-->
+             <div id="social_networks">
+                <a id="social" name="social"></a>
+                <h3>Social Networks</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_social %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                <br>
+                {% else %}
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="center"><font color="white">SOCIAL NETWORK</font></p></td>
+                      <td><p align="center"><font color="white">USERNAME</font></p></td>
+                      <td><p align="center"><font color="white">PICTURE</font></p></td>
+                      <td><p align="center"><font color="white">NAME</font></p></td>
+                      <td><p align="center"><font color="white">ADDITIONAL INFO</font></p></td>
+                    </tr>
+
+                    {% for twitter, info in social_tweet.items() %}  
+                    <!-- twitter -->
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center"> 
+                          <a href="https://twitter.com" target="_blank">Twitter</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://twitter.com/{{ twitter }}" target="_blank">{{ twitter }}</a>
+                        </p>
+                      </td>
+                      <td>
+
+                        <p class="table_results" align="center">
+                          <a href="{{ profile_image.replace('.jpg', '_400x400.jpg') }}" target="_blank">
+                            <img src="{{ profile_image.replace('.jpg', '_400x400.jpg') }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ user_name }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ location }}
+                        </p>
+                      </td>
+                    </tr>
+
+                    <!-- instagram -->
+                    {% if info[0][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://instagram.com" target="_blank">Instagram</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[0][1] }}" target="_blank">{{ info[0][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[0][2] %}
+                          <a href="{{ info[0][2] }}" target="_blank">
+                            <img src="{{ info[0][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[0][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[0][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- foursquare -->
+                    {% if info[1][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://foursquare.com" target="_blank">Foursquare</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[1][1] }}" target="_blank">{{ info[1][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[1][2] %}
+                          <a href="{{ info[1][2] }}" target="_blank">
+                            <img src="{{ info[1][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[1][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[1][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- facebook -->
+                    {% if info[2][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://facebook.com" target="_blank">Facebook</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[2][1] }}" target="_blank">{{ info[2][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[2][2] %}
+                          <a href="{{ info[2][2] }}" target="_blank">
+                            <img src="{{ info[2][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[2][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[2][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- linkedin -->
+                    {% if info[3][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[3][1] }}" target="_blank">{{ info[3][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[3][2] %}
+                          <a href="{{ info[3][2] }}" target="_blank">
+                            <img src="{{ info[3][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[3][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[3][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- runkeeper -->
+                    {% if info[4][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://runkeeper.com" target="_blank">Runkeeper</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[4][1] }}" target="_blank">{{ info[4][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[4][2] %}
+                          <a href="{{ info[4][2] }}" target="_blank">
+                            <img src="{{ info[4][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[4][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[4][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- flickr -->
+                    {% if info[5][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://flickr.com" target="_blank">Flickr</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[5][1] }}" target="_blank">{{ info[5][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[5][2] %}
+                          <a href="{{ info[5][2] }}" target="_blank">
+                            <img src="{{ info[5][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[5][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[5][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- vine -->
+                    {% if info[6][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://vine.co" target="_blank">Vine</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[6][1] }}" target="_blank">{{ info[6][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[6][2] %}
+                          <a href="{{ info[6][2] }}" target="_blank">
+                            <img src="{{ info[6][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[6][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[6][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- periscope -->
+                    {% if info[7][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://periscope.tv" target="_blank">Periscope</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[7][1] }}" target="_blank">{{ info[7][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[7][2] %}
+                          <a href="{{ info[7][2] }}" target="_blank">
+                            <img src="{{ info[7][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[7][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[7][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- kindle -->
+                    {% if info[8][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://kindle.amazon.com" target="_blank">Kindle</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[8][1] }}" target="_blank">{{ info[8][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[8][2] %}
+                          <a href="{{ info[8][2] }}" target="_blank">
+                            <img src="{{ info[8][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[8][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[8][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- youtube -->
+                    {% if info[9][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://youtube.com" target="_blank">Youtube</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[9][1] }}" target="_blank">{{ info[9][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[9][2] %}
+                          <a href="{{ info[9][2] }}" target="_blank">
+                            <img src="{{ info[9][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[9][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[9][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- google+ -->
+                    {% if info[10][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="https://plus.google.com" target="_blank">Google+</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[10][1] }}" target="_blank">{{ info[10][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[10][2] %}
+                          <a href="{{ info[10][2] }}" target="_blank">
+                            <img src="{{ info[10][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[10][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[10][4] }}
+                        </p>
+                      </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- frontback -->
+                    {% if info[11][2] %}
+                    <tr>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="http://www.frontback.me" target="_blank">Frontback</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          <a href="{{ info[11][1] }}" target="_blank">{{ info[11][0] }}</a>
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {% if info[11][2] %}
+                          <a href="{{ info[11][2] }}" target="_blank">
+                            <img src="{{ info[11][2] }}" target="_blank" width="100" height="100" border="1">
+                          </a>
+                          {% else %}
+                            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                          {% endif %}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[11][3] }}
+                        </p>
+                      </td>
+                      <td>
+                        <p class="table_results" align="center">
+                          {{ info[11][4] }}
+                        </p>
+                      </td>
+                    </tr> 
+                    {% endif %}               
+
+                    {% endfor %}
+                      </table>
+                <p class="results">Total: {{ social_results }} results.</p>
+                <br><br>
+
+                {% endif %}  
+            </div><!--#end social_networks-->
+
+            <!--hashtags table-->
+             <div id="hashtags">
+                <a id="hashtags" name="hashtags"></a>
+                <h3>Hashtags</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_hashtag %}
+
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                <br>
+                {% else %}
+
+                      <h2>Hashtags in Tweets</h2>
+                      <table class="client_app" width="970" border="0">
+                          <tr bgcolor="1c75bc">
+                            <td height="25"><p align="center"><font color="white">DATE</font></p></td>
+                            <td><p align="center"><font color="white">TIME</font></p></td>
+                            <td><p align="center"><font color="white">RT</font></p></td>
+                            <td><p align="center"><font color="white">LIKE</font></p></td>
+                            <td><p align="center"><font color="white">TWEET</font></p></td>
+                            <td><p align="center"><font color="white">USER</p></td>
+                            <td><p align="center"><font color="white">PROFILE IMG</p></td>
+                            <td colspan=2><p><font color="white">LOCATION</font></p></td>
+                            <td colspan=2><p><font color="white">#HASHTAG</font></p></td>
+                          </tr>                      
+
+                        {% for info in hashtags_tweet %}  
+                          {% if info[6] == screen_name %}
+                          <tr bgcolor="{{ user_color }}"> 
+                          {% else %}
+                          <tr bgcolor="">
+                          {% endif %}                        
+
+                            <td><p class="table_results" align="center">{{ info[0] }}</p></td>
+                            <td><p class="table_results" align="center">{{ info[1] }}</p></td>
+                            <td><p class="table_results" align="center">{{ info[2] }}</p></td>
+                            <td><p class="table_results" align="center">{{ info[3] }}</p></td>
+                            <td><p class="table_results" align="center"><a href="https://twitter.com/{{ screen_name }}/status/{{ info[5] }}" target="_blank">view</a></p></td>
+                		        <td><p class="table_results" align="center"><a href="http://www.twitter.com/{{ info[6] }}" target="_blank">@{{ info[6] }}</a></p></td>
+                            <td><p class="table_results" align="center"><a href="{{ info[7].replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ info[7].replace('.jpg', '_400x400.jpg') }}" width="100" height="100" border=1></a></p></td>
+                            <td colspan=2><p class="table_results">{{ info[8] }}</p></td>
+                            <td colspan=2><p class="table_results">{{ info[4] }}</p></td>
+                          </tr>
+      		              {% endfor %}
+                            </table>
+      			<p class="results">Total: {{ hashtags_results1 }} results.</p>
+            <br>
+                    <h2>Hashtag Detail</h2>            
+                  <table class="client_app" width="970" border="0">
+                          <tr bgcolor="1c75bc">
+                            <td height="25"><p align="center"><font color="white">DATE (SINCE)</font></p></td>
+                            <td ><p align="center"><font color="white">DATE (UNTIL)</font></p></td>
+                            <td ><p align="center"><font color="white">RT</font></p></td>
+                            <td ><p align="center"><font color="white">LIKE</font></p></td>
+                            <td ><p align="center"><font color="white">COUNT</font></p></td>
+                            <td ><p><font color="white">#HASHTAG</p></td>
+                          </tr>
+
+
+                          {% for info in hashtag %}  
+                          {% if info in hashtags_users[screen_name] %}
+                          <tr bgcolor="{{ user_color }}"> 
+                          {% else %}
+                          <tr bgcolor="">
+                          {% endif %}
+                            <td><p class="table_results" align="center">{{ hashtags_firstdate[info.upper()].strftime('%m/%d/%Y') }}</p></td>
+                            <td><p class="table_results" align="center">{{ hashtags_lastdate[info.upper()].strftime('%m/%d/%Y') }}</p></td>
+                            <td><p class="table_results" align="center">{{ hashtags_rt[info.upper()] }}</p></td>
+                            <td><p class="table_results" align="center">{{ hashtags_fv[info.upper()] }}</p></td>
+                            <td><p class="table_results_days" align="center">{{ hashtags_count[info.upper()] }}</p></td>
+                            <td><p class="table_results"><a href="https://twitter.com/hashtag/{{ info }}" target="_blank">#{{ info }}</a></p></td>
+                          </tr>
+                          {% endfor %}  
+                                        </table>
+      			<p class="results">Total: {{ hashtags_results2 }} results.</p>
+            <br>
+                    <h2>Top Hashtags</h2>
+                    <table class="client_app" width="970" border="0">
+
+                         <tr bgcolor="1c75bc">
+                            <td height="25"><p align="center"><font color="white">DATE (SINCE)</font></p></td>
+                            <td ><p align="center"><font color="white">DATE (UNTIL)</font></p></td>
+                            <td ><p align="center"><font color="white">RT</font></p></td>
+                            <td ><p align="center"><font color="white">LIKE</font></p></td>
+                            <td ><p align="center"><font color="white">COUNT</font></p></td>
+                            <td ><p><font color="white">#HASHTAG</p></td>
+                          </tr>
+
+                          {% for info in hashtags_top %}  
+                          {% if info[0] in hashtags_users[screen_name] %}
+                          <tr bgcolor="{{ user_color }}"> 
+                          {% else %}
+                          <tr bgcolor="">
+                          {% endif %}
+                            <td><p class="table_results" align="center">{{ hashtags_firstdate[info[0].upper()].strftime('%m/%d/%Y') }}</p></td>
+                            <td><p class="table_results" align="center">{{ hashtags_lastdate[info[0].upper()].strftime('%m/%d/%Y') }}</p></td>
+                            <td><p class="table_results" align="center">{{ hashtags_rt[info[0].upper()] }}</p></td>
+                            <td><p class="table_results" align="center">{{ hashtags_fv[info[0].upper()] }}</p></td>
+                            <td><p class="table_results_days" align="center">{{ hashtags_count[info[0].upper()] }}</p></td>
+                            <td><p class="table_results"><a href="https://twitter.com/hashtag/{{ info[0] }}" target="_blank">#{{ info[0] }}</a></p></td>
+                          </tr>
+                          {% endfor %}  
+                                        </table>
+      			<p class="results">Total: {{ hashtags_results3 }} results.</p>
+            <br><br>
+
+
+
+<canvas id="chart-tophashtags" width="50" height="20"></canvas>
+
+<script>
+
+var chartData = {
+    	labels: [ 
+	    	{% for info in hashtags_top %}
+	    	'{{ info[0] }}',
+	    	{% endfor %} 
+	    	],
+
+	        datasets: [{
+                type: 'bar',
+                label: 'Number of Hashtags',
+                backgroundColor: [
+		        {% for info in hashtags_top %}
+				"#3cde9f",
+		    	{% endfor %}   
+                ],
+                data: [
+		        {% for info in hashtags_top %}
+		    	{{ hashtags_count[info[0].upper()] }},
+		    	{% endfor %}  
+                ],
+                borderColor: 'white',
+                borderWidth: 1
+            }, {
+                type: 'bar',
+                label: 'Number of RTs',
+                backgroundColor: [
+		        {% for info in hashtags_top %}
+				"#ccda1b",
+		    	{% endfor %}   
+                ],
+                data: [
+		        {% for info in hashtags_top %}
+		    	{{ hashtags_rt[info[0].upper()] }},
+		    	{% endfor %}  
+                ],
+                borderColor: 'white',
+                borderWidth: 1
+            }, {
+                type: 'bar',
+                label: 'Number of LIKEs',
+                backgroundColor: [
+		        {% for info in hashtags_top %}
+				"#1ade1b",
+		    	{% endfor %}   
+                ],
+                data: [
+		        {% for info in hashtags_top %}
+		    	{{ hashtags_fv[info[0].upper()] }},
+		    	{% endfor %}  
+                ],
+                borderColor: 'white',
+                borderWidth: 1
+            }]
+
+        };
+
+
+
+var ctx = document.getElementById("chart-tophashtags").getContext('2d');
+var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Top Hashtags'
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: true
+                    }
+                }
+            });
+</script>
+
+
+
+
+
+                {% endif %}  
+                  </div><!--#end hashtags table--> 
+
+
+            <!--mentions table-->
+            <div id="client_apps">
+                <a id="user_mentions" name="user_mentions"></a>
+                <h3>User Mentions</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_mention %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+                      <h2>User Mentions in Tweets</h2>
+                      <table class="client_app" width="970" border="0">
+                          <tr bgcolor="1c75bc">
+                            <td height="25"><p align="center"><font color="white">DATE</font></p></td>
+                            <td><p align="center"><font color="white">TIME</font></p></td>
+                            <td><p align="center"><font color="white">RT</font></p></td>
+                            <td><p align="center"><font color="white">LIKE</font></p></td>
+                            <td><p align="center"><font color="white">TWEET</font></p></td>
+                            <td><p align="center"><font color="white">USER</font></p></td>
+                            <td><p align="center"><font color="white">PROFILE IMG</font></p></td>                      
+                            <td colspan=2><p><font color="white">LOCATION</font></p></td>
+                            <td colspan=2><p><font color="white">@MENTION</font></p></td>
+                          </tr>
+
+
+                          {% for info in mentions_tweet %}  
+                          {% if info[6] == screen_name %}
+                          <tr bgcolor="{{ user_color }}"> 
+                          {% else %}
+                          <tr bgcolor="">
+                          {% endif %}
+
+                            <td><p class="table_results" align="center">{{ info[0] }}</p></td>
+                            <td><p class="table_results" align="center">{{ info[1] }}</p></td>
+                            <td><p class="table_results" align="center">{{ info[2] }}</p></td>
+                            <td><p class="table_results" align="center">{{ info[3] }}</p></td>
+                            <td><p class="table_results" align="center"><a href="https://twitter.com/{{ screen_name }}/status/{{ info[5] }}" target="_blank">view</a></p></td>
+      		      <td><p class="table_results" align="center"><a href="http://www.twitter.com/{{ info[6] }}" target="_blank">@{{ info[6] }}</a></p></td>
+                <td><p class="table_results" align="center"><a href="{{ info[7].replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ info[7].replace('.jpg', '_400x400.jpg') }}" width="100" height="100" border=1></a></p></td>
+                            <td colspan=2><p class="table_results">{{ info[8] }}</p></td>
+                            <td colspan=2><p class="table_results">{{ info[4] }}</p></td>
+                          </tr>
+                          {% endfor %}                        
+                                        </table>
+      			<p class="results">Total: {{ mentions_results1 }} results.</p>
+                    <h2>User Mention Detail</h2>                        
+                   <table class="client_app" width="970" border="0">
+                          <tr bgcolor="1c75bc">
+                            <td height="25"><p align="center"><font color="white">DATE (SINCE)</font></p></td>
+                            <td><p align="center"><font color="white">DATE (UNTIL)</font></p></td>
+                            <td><p align="center"><font color="white">RT</font></p></td>
+                            <td><p align="center"><font color="white">LIKE</font></p></td>
+                            <td><p align="center"><font color="white">COUNT</font></p></td>
+                            <td><p><font color="white">NAME</font></p></td>
+                            <td><p><font color="white">@MENTION</font></p></td>
+                          </tr>
+
+
+                          {% for info in mention %}  
+                          {% if info in mentions_users[screen_name] %}
+                          <tr bgcolor="{{ user_color }}"> 
+                          {% else %}
+                          <tr bgcolor="">
+                          {% endif %}
+                            <td><p class="table_results" align="center">{{ mentions_firstdate[info.upper()].strftime('%m/%d/%Y') }}</p></td>
+                            <td><p class="table_results" align="center">{{ mentions_lastdate[info.upper()].strftime('%m/%d/%Y') }}</p></td>
+                            <td><p class="table_results" align="center">{{ mentions_rt[info.upper()] }}</p></td>
+                            <td><p class="table_results" align="center">{{ mentions_fv[info.upper()] }}</p></td>
+                            <td><p class="table_results" align="center">{{ mentions_count[info.upper()] }}</p></td>
+                            <td><p class="table_results">{{ mentions_name[info.upper()] }}</p></td>
+                            <td ><p class="table_results"><a href="https://twitter.com/{{ info }}" target="_blank">@{{ info }}</a></p></td>
+                          </tr>
+      		   {% endfor %}                      
+                                        </table>
+      			<p class="results">Total: {{ mentions_results2 }} results.</p> 
+                    <h2>Top Mentions</h2>
+                   <table class="client_app" width="970" border="0">
+
+                         <tr bgcolor="1c75bc">
+                            <td height="25"><p align="center"><font color="white">DATE (SINCE)</font></p></td>
+                            <td><p align="center"><font color="white">DATE (UNTIL)</font></p></td>
+                            <td><p align="center"><font color="white">RT</font></p></td>
+                            <td><p align="center"><font color="white">LIKE</font></p></td>
+                            <td><p align="center"><font color="white">COUNT</font></p></td>
+                            <td><p><font color="white">NAME</font></p></td>
+                            <td><p><font color="white">@MENTION</font></p></td>
+                          </tr>
+
+                          {% for info in mentions_top %}  
+                          {% if info[0] in mentions_users[screen_name] %}
+                          <tr bgcolor="{{ user_color }}"> 
+                          {% else %}
+                          <tr bgcolor="">
+                          {% endif %}
+                            <td><p class="table_results" align="center">{{ mentions_firstdate[info[0].upper()].strftime('%m/%d/%Y') }}</p></td>
+                            <td><p class="table_results" align="center">{{ mentions_lastdate[info[0].upper()].strftime('%m/%d/%Y') }}</p></td>
+                            <td><p class="table_results" align="center">{{ mentions_rt[info[0].upper()] }}</p></td>
+                            <td><p class="table_results" align="center">{{ mentions_fv[info[0].upper()] }}</p></td>
+                            <td><p class="table_results" align="center">{{ mentions_count[info[0].upper()] }}</p></td>
+                            <td><p class="table_results">{{ mentions_name[info[0].upper()] }}</p></td>
+                            <td><p class="table_results"><a href="https://twitter.com/{{ info[0] }}" target="_blank">@{{ info[0] }}</a></p></td>
+                          </tr> 
+      		   {% endfor %}
+                            
+                                        </table>
+      			<p class="results">Total: {{ mentions_results3 }} results.</p> 
+
+
+
+
+<canvas id="chart-topmentions" width="50" height="20"></canvas>
+
+<script>
+
+var chartData = {
+    	labels: [ 
+	    	{% for info in mentions_top %}
+	    	'{{ info[0] }}',
+	    	{% endfor %} 
+	    	],
+
+	        datasets: [{
+                type: 'bar',
+                label: 'Number of Mentions',
+                backgroundColor: [
+		        {% for info in mentions_top %}
+				"#3cde9f",
+		    	{% endfor %}   
+                ],
+                data: [
+		        {% for info in mentions_top %}
+		    	{{ mentions_count[info[0].upper()] }},
+		    	{% endfor %}  
+                ],
+                borderColor: 'white',
+                borderWidth: 1
+            }, {
+                type: 'bar',
+                label: 'Number of RTs',
+                backgroundColor: [
+		        {% for info in mentions_top %}
+				"#ccda1b",
+		    	{% endfor %}   
+                ],
+                data: [
+		        {% for info in mentions_top %}
+		    	{{ mentions_rt[info[0].upper()] }},
+		    	{% endfor %}  
+                ],
+                borderColor: 'white',
+                borderWidth: 1
+            }, {
+                type: 'bar',
+                label: 'Number of LIKEs',
+                backgroundColor: [
+		        {% for info in mentions_top %}
+				"#1ade1b",
+		    	{% endfor %}   
+                ],
+                data: [
+		        {% for info in mentions_top %}
+		    	{{ mentions_fv[info[0].upper()] }},
+		    	{% endfor %}  
+                ],
+                borderColor: 'white',
+                borderWidth: 1
+            }]
+
+        };
+
+
+
+var ctx = document.getElementById("chart-topmentions").getContext('2d');
+var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Top Mentions'
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: true
+                    }
+                }
+            });
+</script>
+
+
+
+
+              {% endif %}
+                  </div><!--#end mentions table--> 
+
+
+            <!--favourites table-->            
+            <div id="favourites">
+            <a id="favourites" name="favourites"></a>
+                <h3>Likes</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_favorites %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+                <table class="" width="970" border="0">
+                    <tr bgcolor="1c75bc"> 
+                      <td height="25"><p align="center"><font color="white">DATE</font></p></td>
+                      <td><p align="center"><font color="white">TIME</font></p></td>
+                      <td><p align="center"><font color="white">USER</font></p></td>
+                      <td><p align="center"><font color="white">PROFILE IMG</font></p></td>
+                      <td colspan="2"><p><font color="white">NAME</p></td>
+                      <td><p align="center"><font color="white">MEDIA</p></td>
+                      <td colspan="3"><p><font color="white">TWEET</font></p></td>
+                    </tr>
+
+                    {% for info in favourites_tweets %}   
+                    {% if info[3] == screen_name %}
+                    <tr bgcolor="{{ user_color }}"> 
+                    {% else %}
+                    <tr bgcolor="">
+                    {% endif %}
+                      <td><p align="center" class="table_results">{{ info[1] }}</p></td>
+                      <td><p align="center" class="table_results">{{ info[2] }}</p></td>
+                      <td><p align="center" class="table_results"><a href="https://twitter.com/{{ info[3] }}" target="_blank">@{{ info[3] }}</a></p></td>
+                      <td><p align="center" class="table_results"><a href="{{ info[4].replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ info[4].replace('.jpg', '_400x400.jpg') }}" width="100" height="100" border=1></a></p></td>
+                      <td colspan="2"><p class="table_results">{{ info[5] }}</p></td>
+                      <td><p align="center" class="table_results">
+                      {% if info[6] %}
+                      <a href="{{ info[6] }}" target="_blank"><img src="{{ info[6] }}" width=100 height=100 border="1"></a>
+                      {% else %}
+                      <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                      {% endif %}
+                      </p></td>                      
+                      <td colspan="3"><p class="table_results"><a href="https://twitter.com/{{ info[3] }}/status/{{ info[0] }}" target="_blank">{{ info[7] }}</a></p></td>
+                    </tr>
+                    {% endfor %}  
+                                  </table>
+                 <p class="results">Total: {{ fav_count }} results.</p>
+                 {% endif %}
+                 <br><br>
+            </div><!--#end favourites table--> 
+
+
+            <!--tweets table-->            
+            <div id="client_apps">
+            <a id="tweets" name="tweets"></a>
+                <h3>Tweets</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_tweet %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+                <table class="" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="center"><font color="white">DATE</font></p></td>
+                      <td><p align="center"><font color="white">TIME</font></p></td>
+                      <td><p align="center"><font color="white">USER</font></p></td>
+                      <td><p align="center"><font color="white">PROFILE IMG</font></p></td>
+                      <td><p><font color="white">NAME</font></p></td>
+                      <td colspan="2"><p><font color="white">LOCATION</font></p></td>
+                      <td><p align="center"><font color="white">MEDIA</font></p></td>
+                      <td colspan="2"><p><font color="white">TWEET</p></td>
+                    </tr>
+
+                    {% for info in tweet_find %}   
+                    {% if info[4] == screen_name %}
+                    <tr bgcolor="{{ user_color }}"> 
+                    {% else %}
+                    <tr bgcolor="">
+                    {% endif %}
+                      <td><p align="center" class="table_results">{{ info[1] }}</p></td>
+                      <td><p align="center" class="table_results">{{ info[2] }}</p></td>
+                      <td><p align="center" class="table_results"><a href="https://twitter.com/{{ info[4] }}" target="_blank">@{{ info[4] }}</a></p></td>
+                      <td><p align="center" class="table_results"><a href="{{ info[5].replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ info[5].replace('.jpg', '_400x400.jpg') }}" width=100 height=100 border="1"></a></p></td>
+                      <td><p class="table_results">{{ info[7] }}</p></td>
+                      <td colspan=2><p class="table_results">{{ info[6] }}</p></td>                      
+                      <td><p align="center" class="table_results">
+                      
+            {% if info[8] %}
+				      {% if info[9] == "Image" %}
+							<a href="{{ info[8] }}" target="_blank"><img src="{{ info[8] }}" width=100 height=100 border="0"></a>
+					  {% endif %}
+			          {% if info[9] == "Video" %}
+				            <a href="{{ info[0] }}" target="_blank">
+					              <video src="{{ info[8] }}" width=100 height=100 border="0" controls></video>
+							</a>
+					  {% endif %}
+            {% else %}
+            <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+            {% endif %}
+
+                      </p></td>                      
+                      <td colspan="2"><p class="table_results"><a href="https://twitter.com/{{ screen_name }}/status/{{ info[3] }}" target="_blank">{{ info[0] }}</a></p></td>
+                    </tr>
+                    {% endfor %}  
+                                  </table>
+			           <p class="results">Total: {{ find_count }} results.</p>
+                 {% endif %}
+            </div><!--#end tweets table--> 
+
+
+            <!--top words table-->            
+            <div id="client_apps">
+            <a id="topwords" name="topwords"></a>
+                <h3>Words Most used</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_words %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+                <table class="" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="center"><font color="white">WORD</font></p></td>
+                      <td><p align="center"><font color="white">OCCURRENCES</font></p></td>
+                      <td><p align="center"><font color="white">PERCENTAGE</font></p></td>
+                      <td><p align="center"><font color="white">FIRST OCCURRENCE</font></p></td>
+                      <td><p align="center"><font color="white">LAST OCCURRENCE</font></p></td>
+                    </tr>
+
+                    {% for info in top_words %}   
+                    <tr bgcolor="">
+                      <td><p align="center" class="table_results">{{ info[0] }}</p></td>
+                      <td><p align="center" class="table_results">{{ info[1] }}</p></td>
+                      <td><p align="center" class="table_results">
+                      	<script type="text/javascript">
+                      		var percent = Number(({{ (info[1]*100)/total_occurrences }}).toFixed(2));
+                      		document.write(percent+"%");
+                      	</script>
+                      </p></td>
+                      <td><p align="center" class="table_results">{{ top_dates[info[0]][0] }}</p></td>
+                      <td><p align="center" class="table_results">{{ top_dates[info[0]][1] }}</p></td>
+                    </tr>  
+                    {% endfor %}  
+                                  </table>
+                 <p class="results">Total: {{ words_count }} results.</p>
+
+
+<canvas id="chart-topwords" width="50" height="20"></canvas>
+<script>
+var ctx = document.getElementById("chart-topwords").getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+    	labels: [ 
+	    	{% for info in top_words %}
+	    	'{{ info[0] }}',
+	    	{% endfor %} 
+	    	],
+        datasets: [{
+            label: 'Number of occurrences',
+            data: [
+		        {% for info in top_words %}
+		    	{{ info[1] }},
+		    	{% endfor %}     
+		        ],
+            backgroundColor: [
+		        {% for info in top_words %}
+				"#3cde9f",
+		    	{% endfor %}  
+            ],
+            borderColor: [
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        },
+		title: {
+    		display: true,
+        	text: 'Words most used'
+        }
+    }
+});
+</script>
+
+
+                 {% endif %}
+            </div><!--#end tweets table--> 
+
+            
+            <!--metadata table-->            
+            <div id="client_apps">
+                <a id="metadata" name="media"></a>
+                <h3>METADATA </h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_metadata %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+
+                <h2>Profile Image</h2>
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                       <td height="25"><p align="center"><font color="white">PICTURE</font></p></td>
+	   	                 <td colspan="3"><p><font color="white">DESCRIPTION</font></p></td>
+                    </tr>
+                    
+                    <tr>
+                       <td><p class="table_results" align="center"><a href="{{ profile_image.replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ profile_image.replace('.jpg', '_400x400.jpg') }}" target="_blank" alt="usuario" width="100" height="100" border="1"></a></p></td>
+			                 <td colspan="3"><p class="table_results">{{ meta_profile_image[0] }}</p></td>
+                    </tr>
+
+                    <tr>
+                       <td><p><br></p></td>
+	   	                 <td><p></p></td>
+                       <td><p></p></td>
+                       <td><p></p></td>
+                    </tr>
+
+                    <tr bgcolor="1c75bc">
+                       <td height="25"><p><font color="white">COPYRIGHT</font></p></td>
+	   	                 <td><p><font color="white">ORIGINAL DATETIME</font></p></td>
+                       <td><p><font color="white">MAKE</font></p></td>
+                       <td><p><font color="white">MODEL</font></p></td>
+                    </tr>
+                    <tr>
+                       <td><p class="table_results">{{ meta_profile_image[1] }}</p></td>
+   		                 <td><p class="table_results">{{ meta_profile_image[2] }}</p></td>
+                      <td><p class="table_results">{{ meta_profile_image[3] }}</p></td>
+                      <td><p class="table_results">{{ meta_profile_image[4] }}</p></td>
+                    </tr>
+
+                    <tr>
+                       <td><p><br></p></td>
+	   	                 <td><p></p></td>
+                       <td><p></p></td>
+                       <td><p></p></td>
+                    </tr>
+
+                    <tr bgcolor="1c75bc">
+                       <td height="25"><p><font color="white">SOFTWARE</font></p></td>
+	   	                 <td><p><font color="white">SUBJECT DISTANCE</font></p></td>
+                       <td><p><font color="white">PLATFORM</font></p></td>
+                       <td><p><font color="white">ICC DATE</font></p></td>
+                    </tr>
+                    <tr>
+                       <td><p class="table_results">{{ meta_profile_image[5] }}</p></td>
+   		                 <td><p class="table_results">{{ meta_profile_image[6] }}</p></td>
+                      <td><p class="table_results">{{ meta_profile_image[7] }}</p></td>
+                      <td><p class="table_results">{{ meta_profile_image[8] }}</p></td>
+                    </tr>
+
+                    <tr>
+                       <td><p><br></p></td>
+	   	                 <td><p></p></td>
+                       <td><p></p></td>
+                       <td><p></p></td>
+                    </tr>
+
+                    <tr bgcolor="1c75bc">
+                       <td height="25"><p><font color="white">THUMBNAIL</font></p></td>
+	   	                 <td colspan="3"><p><font color="white">COORDINATES</font></p></td>
+                    </tr>
+                    <tr>
+                       <td><p class="table_results">{{ thumb }}</p></td>
+   		                 <td colspan="3"><p class="table_results">{{ coordinates }}</p></td>
+                    </tr>
+
+              </table>              
+              {% endif %}
+            </div><!--#end images table--> 
+
+              <!--media table-->            
+            <div id="client_apps">
+                <a id="media" name="media"></a>
+                <h3>User images and videos</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_media %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+
+                {% if media_directory %}
+
+              <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p><font color="white">IMAGES DIRECTORY</font></p></td>
+                    </tr>
+                    <tr>
+                    <td><p class="table_results">{{ media_directory }}</p></td>
+                    </tr>
+              </table>
+
+              <table class="client_app" width="970" border="0">
+                    <tr><td><br></td></tr>
+              </table>
+
+                {% endif %}
+
+              <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="center"><font color="white">MEDIA</font></p></td>
+                      <td colspan="2"><p><font color="white">APP</font></p></td>
+                      <td><p align="center"><font color="white">REPLY TO</font></p></td>
+                      <td align="center"><p><font color="white">RT</font></p></td>
+                      <td align="center"><p><font color="white">LIKE</font></p></td>
+                      <td colspan="2"><p align="center"><font color="white">SOURCE USER</font></p></td>
+                      <td colspan="2"><p align="center"><font color="white">RT USER</font></p></td>
+		                  <td align="center"><p><font color="white">TWEET</font></p></td>
+                    </tr>
+
+		    {% for info in media %}    
+                    {% if info[5] == "" %}
+                    <tr bgcolor="{{ user_color }}"> 
+                    {% else %}
+                    <tr bgcolor="">
+                    {% endif %}
+
+		    	<td align="center"><p class="table_results">
+			      {% if info[9] == "Image" %}
+				<a href="{{ info[0] }}" target="_blank"><img src="{{ info[0] }}" width=100 height=100 border="1"></a>
+				{% endif %}
+			      {% if info[9] == "Video" %}
+				<a href="{{ info[0] }}" target="_blank">
+					<video src="{{ info[0] }}" width=100 height=100 border="1" controls>
+					Video
+					</video>
+				</a>
+				{% endif %}
+		       </p></td>
+
+        <td colspan=2><p class="table_results">{{ info[12] }}</p></td>	
+        <td align="center"><p class="table_results">
+          {% if info[15] %}
+          <a href="https://twitter.com/{{ info[15] }}" target="_blank">@{{ info[15] }}</a>
+          {% endif %}  
+        </p></td>	       
+        <td align="center"><p class="table_results">{{ info[13] }}</p></td>           
+        <td align="center"><p class="table_results">{{ info[14] }}</p></td>            
+
+			{% if info[5] == "" %}
+			      <td align="center"><p class="table_results">
+					<a href="{{ info[11].replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ info[11].replace('.jpg', '_400x400.jpg') }}" width=100 height=100 border="1"></a>
+				</p></td>
+			      <td colspan=3><p class="table_results"><a href="https://twitter.com/{{ info[10] }}" target="_blank">@{{ info[10] }}</a>
+					<br>{{ info[2] }}<br>{{ info[3] }}</p></td>
+			{% else %}
+				<td align="center"><p class="table_results">
+				      <a href="{{ info[6].replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ info[6].replace('.jpg', '_400x400.jpg') }}" width=100 height=100 border="1"></a>
+				</p></td>
+				      <td><p class="table_results"><a href="https://twitter.com/{{ info[5] }}" target="_blank">@{{ info[5] }}</a>
+						<br>{{ info[7] }}<br>{{ info[8] }}</p></td>
+				<td align="center"><p class="table_results">
+					<a href="{{ info[11] }}" target="_blank"><img src="{{ info[11] }}" width=100 height=100 border="1"></a>
+				</p></td>
+			      <td><p class="table_results"><a href="https://twitter.com/{{ info[10] }}" target="_blank">@{{ info[10] }}</a>
+					<br>{{ info[2] }}<br>{{ info[3] }}</p></td>
+			{% endif %}
+
+			
+			<td align="center"><p class="table_results"><a href="https://twitter.com/{{ info[10] }}/status/{{ info[4] }}" target="_blank">view</a></p></td>
+                    </tr>
+
+		
+                    <tr>
+                      <td><p class="table_results">
+                      <ul>
+			{% if meta_size[info[0]] %}
+                      	<li>Size: {{ meta_size[info[0]] }}</li>
+                        {% endif %}                       	
+			{% if meta_description[info[0]] %}
+                      	<li>Description: {{ meta_description[info[0]] }}</li>
+                        {% endif %}                       	
+			{% if meta_copyright[info[0]] %}
+			<li>Copyright: {{ meta_copyright[info[0]] }}</li>
+                        {% endif %}                       	
+			{% if meta_date[info[0]] %}
+              		<li>Original Datetime: {{ meta_date[info[0]] }}</li>
+                        {% endif %}                       	
+			{% if meta_model[info[0]] %}
+              		<li>Model: {{ meta_model[info[0]] }}</li>
+			{% endif %}                       	
+			{% if meta_software[info[0]] %}
+  			<li>Software: {{ meta_software[info[0]] }}</li>	
+              		{% endif %}                       	
+			{% if meta_distance[info[0]] %}
+  			<li>Distance: {{ meta_distance[info[0]] }}</li>
+			{% endif %}                       	
+			{% if meta_platform[info[0]] %}
+  			<li>Platform: {{ meta_platform[info[0]]}}</li>	
+              		{% endif %}                       	
+			{% if meta_iccdate[info[0]] %}
+  			<li>ICC Date: {{ meta_iccdate[info[0]] }}</li>
+			{% endif %}                       	
+			{% if meta_coordinates[info[0]] %}
+  			<li>Coordinates: {{ meta_coordinates[info[0]] }}</li>	
+              		{% endif %}                       	
+			{% if meta_thumb[info[0]] %}
+  			<li>Thumbnail: {{ meta_thumb[info[0]] }}</li>
+			{% endif %}                       	
+		      </ul>
+                      </p></td>
+                      <td><p class="table_results"></p></td>
+                      <td><p class="table_results"></p></td>
+                    </tr>
+
+		    {% endfor %}
+				</table>
+              <p class="results">Total: {{ media_count }}  results.</p>
+              {% endif %}
+            </div><!--#end media table--> 
+            
+            <!--geo table-->            
+            <div id="client_apps">
+            <a id="geo" name="geo"></a>
+                <h3>Geolocation Information</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_geolocation %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+
+                <h2>Tweets with geolocation enabled</h2>
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="center"><font color="white">DATE</font></p></td>
+                      <td><p align="center"><font color="white">TIME</font></p></td>
+                      <td colspan="2"><p align="center"><font color="white">COORDINATES</font></p></td>
+                      <td colspan="2"><p><font color="white">LOCATION</font></p></td>
+                      <td><p align="center"><font color="white">MEDIA</font></p></td>
+                      <td colspan="2"><p><font color="white">APPLICATION</font></p></td>
+                      <td><p align="center"><font color="white">TWEET</font></p></td>
+                    </tr>
+
+                    {% for info in geo_info %}
+                    <tr>
+                      <td><p class="table_results" align="center">{{ info[3] }}</p></td>
+                      <td><p class="table_results" align="center">{{ info[4] }}</p></td>
+                      <td colspan="2"><p class="table_results" align="center"><a href='https://maps.google.com/maps?f=q&source=s_q&hl=es&geocode=&q={{ info[2].replace("[","").replace("]","") }}&t=h&z=19&vpsrc=6&iwloc=A' target="_blank">{{ info[2].replace("[","").replace("]","") }}</a></td>
+                      <td colspan=2><p class="table_results">{{ info[1] }}</p></td>
+                      <td><p class="table_results" align="center">
+                      {% if info[0] %}
+                        {% if info[0].find(".mp4") > 0 %}
+                          <a href="{{ info[0] }}" target="_blank"><video src="{{ info[0] }}" width=100 height=100 border="1" controls>
+                            </video></a>
+                        {% else %}
+                            <a href="{{ info[0] }}" target="_blank"><img src="{{ info[0] }}" width=100 height=100 border="1"></a>
+                        {% endif %}
+                      {% else %}
+                        <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                      {% endif %}  
+                      </p></td>
+                      <td colspan="2"><p class="table_results">{{ info[6] }}</p></td>
+		      <td><p class="table_results" align="center"><a href="https://twitter.com/{{ screen_name }}/status/{{ info[5] }}" target="_blank">view</a></p></td>
+                    </tr>
+		    {% endfor %}
+                     
+                                  </table>
+              <p class="results">Total: {{ geo_info_count }} results.</p>
+              <h2>User route</h2>
+              <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="center"><font color="white">TWEETS</font></p></td>
+                      <td><p align="center"><font color="white">GLOBAL</font></p></td>
+                      <td colspan="2"><p align="center"><font color="white">DATE (SINCE)</p></td>
+                      <td colspan="2"><p align="center"><font color="white">TIME (SINCE)</p></td>
+                      <td colspan="2"><p align="center"><font color="white">DATE (UNTIL)</p></td>
+                      <td colspan="2"><p align="center"><font color="white">TIME (UNTIL)</p></td>
+                      <td align="center"><p><font color="white">DAYS</font></p></td>
+                      <td colspan="5"><p><font color="white">LOCATION</font></p></td>
+                      <td colspan="2"><p align="center"><font color="white">COORDINATES</font></p></td>
+                    </tr>
+
+		    {% for info in geo_visited_locations %}
+                    <tr>
+                      <td class="top_locations_tweets"><p class="table_results" align="center">{{ info[6] }}</p></td>
+                      <td class="top_locations_tweets"><p class="table_results" align="center">{{ geo_toplocations_tweets[info[0]] }}
+                      </p></td>
+                      <td colspan=2><p class="table_results" align="center">{{ info[1].strftime('%m/%d/%Y') }}</p></td>
+                      <td colspan=2><p class="table_results" align="center">{{ info[2] }}</p></td>
+                      <td colspan=2><p class="table_results" align="center">{{ info[3].strftime('%m/%d/%Y') }}</p></td>
+                      <td colspan=2><p class="table_results" align="center">{{ info[4] }}</p></td>
+                      <td align="center"><p class="table_results_days">{{ info[5] }}</p></td>
+                      <td colspan="5"><p class="table_results">{{ info[0] }}</p></td>
+                      <td colspan="2"><p class="table_results" align="center"><a href="https://maps.google.com/maps?f=q&source=s_q&hl=es&geocode=&q={{ info[7] }}&t=h&z=19&vpsrc=6&iwloc=A" target="_blank">{{ info[7] }}</a></p></td>
+                    </tr>
+                    {% endfor %}
+                    
+                                  </table>
+              <p class="results">Total: {{ geo_visited_locations_count }} results.</p>
+              <h2>Top Locations</h2>
+              <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td class="top_locations_tweets" height="25"><p align="center"><font color="white">TWEETS</font></p></td>
+                      <td class="top_locations" colspan="2"><p align="center"><font color="white">DATE TIME (SINCE)</font></p></td>
+                      <td class="top_locations" colspan="2"><p align="center"><font color="white">DATE TIME (UNTIL)</font></p></td>
+                      <td class="top_locations_days"><p align="center"><font color="white">MO</font></p></td>
+                      <td class="top_locations_days"><p align="center"><font color="white">TU</font></p></td>
+                      <td class="top_locations_days"><p align="center"><font color="white">WE</font></p></td>
+                      <td class="top_locations_days"><p align="center"><font color="white">TH</font></p></td>
+                      <td class="top_locations_days"><p align="center"><font color="white">FR</font></p></td>
+                      <td class="top_locations_days"><p align="center"><font color="white">SA</font></p></td>
+                      <td class="top_locations_days"><p align="center"><font color="white">SU</font></p></td>
+                      <td class="top_locations"><p><font color="white">LOCATION</font></p></td>
+                      <td class="top_locations"><p align="center"><font color="white">COORDINATES</font></p></td>
+                    </tr>
+
+		    {% for info in geo_toplocations %}
+                    <tr>
+                      <td class="top_locations_tweets"><p class="table_results" align="center">{{ info[0] }}</p></td>
+                      <td align="center"><p class="table_results" align="center">{{ info[1] }}</p></td>
+                      <td align="center"><p class="table_results" align="center">{{ info[3] }}</p></td>
+                      <td align="center"><p class="table_results" align="center">{{ info[2] }}</p></td>
+                      <td align="center"><p class="table_results" align="center">{{ info[4] }}</p></td>
+                      {% if info[5] in (info[15]) %}
+			<td align="center"><p class="table_results"><img src="img/twitter_icon_red.png" alt="twitter" title="twitter" border="0" width="20" /></p></td>
+ 		      {% else %}
+				{% if info[5] %}
+		   			<td align="center"><p class="table_results"><img src="img/twitter_icon.png" alt="twitter" title="twitter" border="0" width="20"/></p></td>
+	   		        {% else %}
+			   			<td><p class="table_results"></p></td>     		        
+				{% endif %}
+  		      {% endif %}
+                      {% if info[6] in (info[15]) %}
+			<td align="center"><p class="table_results"><img src="img/twitter_icon_red.png" alt="twitter" title="twitter" border="0" width="20" /></p></td>
+ 		      {% else %}
+				{% if info[6] %}
+		   			<td align="center"><p class="table_results"><img src="img/twitter_icon.png" alt="twitter" title="twitter" border="0" width="20"/></p></td>
+	   		        {% else %}
+			   			<td><p class="table_results"></p></td>     		        
+				{% endif %}
+  		      {% endif %}
+                      {% if info[7] in (info[15]) %}
+			<td align="center"><p class="table_results"><img src="img/twitter_icon_red.png" alt="twitter" title="twitter" border="0" width="20" /></p></td>
+ 		      {% else %}
+				{% if info[7] %}
+		   			<td align="center"><p class="table_results"><img src="img/twitter_icon.png" alt="twitter" title="twitter" border="0" width="20"/></p></td>
+	   		        {% else %}
+			   			<td><p class="table_results"></p></td>     		        
+				{% endif %}
+  		      {% endif %}
+                      {% if info[8] in (info[15]) %}
+			<td align="center"><p class="table_results"><img src="img/twitter_icon_red.png" alt="twitter" title="twitter" border="0" width="20" /></p></td>
+ 		      {% else %}
+				{% if info[8] %}
+		   			<td align="center"><p class="table_results"><img src="img/twitter_icon.png" alt="twitter" title="twitter" border="0" width="20"/></p></td>
+	   		        {% else %}
+			   			<td><p class="table_results"></p></td>     		        
+				{% endif %}
+  		      {% endif %}
+                      {% if info[9] in (info[15]) %}
+			<td align="center"><p class="table_results"><img src="img/twitter_icon_red.png" alt="twitter" title="twitter" border="0" width="20" /></p></td>
+ 		      {% else %}
+				{% if info[9] %}
+		   			<td align="center"><p class="table_results"><img src="img/twitter_icon.png" alt="twitter" title="twitter" border="0" width="20"/></p></td>
+	   		        {% else %}
+			   			<td><p class="table_results"></p></td>     		        
+				{% endif %}
+  		      {% endif %}
+                      {% if info[10] in (info[15]) %}
+			<td align="center"><p class="table_results"><img src="img/twitter_icon_red.png" alt="twitter" title="twitter" border="0" width="20" /></p></td>
+ 		      {% else %}
+				{% if info[10] %}
+		   			<td align="center"><p class="table_results"><img src="img/twitter_icon.png" alt="twitter" title="twitter" border="0" width="20"/></p></td>
+	   		        {% else %}
+			   			<td><p class="table_results"></p></td>     		        
+				{% endif %}
+  		      {% endif %}
+                      {% if info[11] in (info[15]) %}
+			<td align="center"><p class="table_results"><img src="img/twitter_icon_red.png" alt="twitter" title="twitter" border="0" width="20" /></p></td>
+ 		      {% else %}
+				{% if info[11] %}
+		   			<td align="center"><p class="table_results"><img src="img/twitter_icon.png" alt="twitter" title="twitter" border="0" width="20"/></p></td>
+	   		        {% else %}
+			   			<td><p class="table_results"></p></td>     		        
+				{% endif %}
+  		      {% endif %}
+   						                    
+                      <td><p class="table_results">{{ info[13].decode('utf-8') }}</p></td>
+                      <td><p class="table_results" align="center"><a href="https://maps.google.com/maps?f=q&source=s_q&hl=es&geocode=&q={{ info[12] }}&t=h&z=19&vpsrc=6&iwloc=A" target="_blank">{{ info[12] }}</a></p></td>
+                    </tr>
+		    {% endfor %}
+                  </table>
+              <p class="results">Total: {{ geo_toplocations_count }} results.</p>
+
+
+<canvas id="chart-toplocations" width="50" height="20"></canvas>
+<script>
+var ctx = document.getElementById("chart-toplocations").getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+    	labels: [ 
+    			'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+	    	],
+        datasets: [
+
+        	{% for info in geo_toplocations %}
+
+        	{
+            label: '{{ info[13].decode('utf-8') }}',
+            backgroundColor: [ "{{ info[23] }}" ],
+            borderColor: [ "{{ info[23] }}" ],
+            fill: false,
+            data: [
+            	{{ info[16] }},
+            	{{ info[17] }},
+            	{{ info[18] }},
+            	{{ info[19] }},
+            	{{ info[20] }},
+            	{{ info[21] }},
+            	{{ info[22] }},
+
+		        ],
+            borderWidth: 2
+        	},
+
+        	{% endfor %}
+
+        ]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        },
+		title: {
+    		display: true,
+        	text: 'Top Locations'
+        }
+    }
+});
+</script>
+
+
+
+              {% endif %}
+            </div><!--#end geo table-->
+
+
+            <!--geo table-->            
+            <div id="client_apps">
+            <a id="search" name="search"></a>
+                <h3>Search by Coordinates</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_search %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+
+                <h2>Advanced Search</h2>
+                {% if output_search_nocoord != "*" %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                <br><br>
+                {% else %}
+
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="center"><font color="white">DATE</font></p></td>
+                      <td><p align="center"><font color="white">TIME</font></p></td>
+                      <td colspan="5"><p><font color="white">TWEET</font></p></td>
+                      <td><p align="center"><font color="white">MEDIA</font></p></td>
+                      <td colspan="2"><p><font color="white">APPLICATION</font></p></td>
+                      <td><p align="center"><font color="white">PROFILE IMG</font></p></td>
+                      <td><p align="center"><font color="white">USER</font></p></td>
+                    </tr>
+                    {% for info in adv_geo_info %}
+                    <tr>
+                      <td align="center"><p class="table_results">{{ info[3] }}</p></td>
+                      <td align="center"><p class="table_results">{{ info[4] }}</p></td>
+                      <td colspan=5><p class="table_results"><a href="https://twitter.com/{{ info[1] }}/status/{{ info[5] }}" target="_blank">{{ info[14] }}</a></td>
+                      {% if info[8] == "" %}
+                      <td align="center"><p class="table_results">
+                          <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                      {% endif %}
+                      {% if info[8] == "Image" %}
+                      <td align="center"><p class="table_results">
+                          <a href="{{ info[2] }}" target="_blank"><img src="{{ info[2] }}" width=100 height=100 border="1"></a>
+                      {% endif %}
+                      {% if info[8] == "Video" %}
+                      <td  align="center" bgcolor="{{ user_color }}"><p class="table_results">
+                          <a href="{{ info[2] }}" target="_blank">
+                          <video src="{{ info[2] }}" width=100 height=100 border="1" controls>Video</video>
+                          </a>
+                      {% endif %}
+                      </p></td>
+
+          <td colspan=2><p class="table_results">{{ info[7] }}</p></td>
+          <td align="center"><p class="table_results"><a href="{{ info[10] }}" target="_blank"><img src="{{ info[10] }}" width=100 height=100 border="1"></a></p></td>
+          <td align="center"><p class="table_results"><a href="https://twitter.com/{{ info[1] }}" target="_blank">@{{ info[1] }}</a></p></td>
+                    </tr>
+        {% endfor %}
+                                  </table>
+              <p class="results">Total: {{ adv_geo_count }} results.</p>
+        {% endif %}
+
+
+                <h2>Search by coordinates</h2>
+                {% if output_search_nocoord == "*" %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                <br><br>
+                {% else %}
+
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="center"><font color="white">DATE</font></p></td>
+                      <td><p align="center"><font color="white">TIME</font></p></td>
+                      <td colspan="2"><p align="center"><font color="white">COORDINATES</font></p></td>
+                      <td><p align="center"><font color="white">MEDIA</font></p></td>
+                      <td colspan="2"><p><font color="white">APPLICATION</font></p></td>
+                      <td><p align="center"><font color="white">TWEET</font></p></td>
+                      <td><p align="center"><font color="white">PROFILE IMG</font></p></td>
+                      <td><p align="center"><font color="white">USER</font></p></td>
+                    </tr>
+
+                    {% for info in adv_geo_info %}
+                    <tr>
+                      <td align="center"><p class="table_results">{{ info[3] }}</p></td>
+                      <td align="center"><p class="table_results">{{ info[4] }}</p></td>
+                      <td align="center" colspan="2"><p class="table_results"><a href='https://maps.google.com/maps?f=q&source=s_q&hl=es&geocode=&q={{ info[0].replace("[","").replace("]","") }}&t=h&z=19&vpsrc=6&iwloc=A' target="_blank">{{ info[0].replace("[","").replace("]","") }}</a></td>
+                      {% if info[8] == "" %}
+                      <td align="center"><p class="table_results">
+                        <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
+                      {% endif %}
+                      {% if info[8] == "Image" %}
+                      <td align="center"><p class="table_results">
+                          <a href="{{ info[2] }}" target="_blank"><img src="{{ info[2] }}" width=100 height=100 border="1"></a>
+                      {% endif %}
+                      {% if info[8] == "Video" %}
+                      <td align="center" bgcolor="{{ user_color }}"><p class="table_results">
+                          <a href="{{ info[2] }}" target="_blank">
+                          <video src="{{ info[2] }}" width=100 height=100 border="1" controls>Video</video>
+                          </a>
+                      {% endif %}
+                      </p></td>
+		      <td colspan=2><p class="table_results">{{ info[7] }}</p></td>
+		      <td align="center"><p class="table_results"><a href="https://twitter.com/{{ info[1] }}/status/{{ info[5] }}" target="_blank">view</a></p></td>
+		      <td align="center"><p class="table_results"><a href="https://twitter.com/{{ info[1] }}" target="_blank"><img src="{{ info[10] }}" width=100 height=100 border="1"></a></p></td>
+          <td align="center"><p class="table_results"><a href="https://twitter.com/{{ info[1] }}" target="_blank">@{{ info[1] }}</a></p></td>
+                    </tr>
+		    {% endfor %}
+                     
+                                  </table>
+              <p class="results">Total: {{ adv_geo_count }} results.</p>
+			{% endif %}
+
+		    <h2>Geolocated Users</h2>
+                {% if output_search_nocoord == "*" %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                <br><br>
+                {% else %}
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td colspan="2" height="25" align="center"><p><font color="white">TWITTER</font></p></td>
+                      <td colspan="2" align="center"><p><font color="white">INSTAGRAM</font></p></td>
+                      <td colspan="2" align="center"><p><font color="white">FOURSQUARE</font></p></td>
+                      <td colspan="2" align="center"><p><font color="white">FACEBOOK</font></p></td>
+                    </tr>
+                    {% for twitter, others in user_sn.items() %}
+                    <tr>
+                      <td><p class="table_results"><a href="https://twitter.com/{{ twitter }}" target="_blank"><img src="{{ others[0][0] }}" width=100 height=100 border=0></a></p></td>
+                      <td><p class="table_results"><a href="https://twitter.com/{{ twitter }}" target="_blank">@{{ twitter }}</a></p></td>
+
+                      {% if others[1][1] %}
+                      <td><p class="table_results"><a href="https://instagram.com/{{ others[1][0] }}" target="_blank"><img src="{{ others[1][1] }}" width=100 height=100 border=0></a></p></td>
+                      {% else %}
+                      <td><p class="table_results"><img src="img/no-image-icon.gif" width=100 height=100 border=0></a></p></td>
+                      {% endif %} 
+
+                      <td><p class="table_results"><a href="https://instagram.com/{{ others[1][0] }}" target="_blank">{{ others[1][0] }}</a></p></td>
+
+          {% if others[2][0] %}
+          <td><p class="table_results"><a href="https://foursquare.com/{{ others[2][0] }}" target="_blank"><img src="{{ others[2][1] }}" width=100 height=100 border=0></a></p></td>
+          {% else %}
+          <td><p class="table_results"><img src="img/no-image-icon.gif" width=100 height=100 border=0></a></p></td>
+          {% endif %}
+
+          <td><p class="table_results"><a href="https://foursquare.com/{{ others[2][0] }}" target="_blank">{{ others[2][0] }}</a></p></td>
+
+		    	{% if others[3][0] %}
+          <td><p class="table_results"><a href="https://www.facebook.com/{{ others[3][0] }}" target="_blank"><img src="{{ others[3][1] }}" width=100 height=100 border=0></a></p></td>
+          {% else %}
+          <td><p class="table_results"><img src="img/no-image-icon.gif" width=100 height=100 border=0></a></p></td>
+          {% endif %}
+
+    			<td><p class="table_results"><a href="https://www.facebook.com/{{ others[3][0] }}" target="_blank">{{ others[3][0] }}</a></p></td>
+
+		                </tr>
+                    <tr>
+                      <td bgcolor="{{ user_color }}" colspan=8><p class="table_results">
+		    {% for keyword in user_keywords[twitter] %}
+                      #{{ keyword }}  
+		    {% endfor %}
+		      </p></td>
+                    </tr>
+		    {% endfor %}
+		    
+                     
+                                  </table>
+              <p class="results">Total: {{ user_sn_count }} results.</p>
+          {% endif %}
+		
+		<h2>Tagged Users</h2>
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25" align="center" colspan="2"><p><font color="white">TAGGED USER</font></p></td>
+                      <td align="center" colspan="2"><p><font color="white">TAGGED BY</font></p></td>
+                      <td align="center"><p><font color="white">MEDIA</font></p></td>
+                      <td align="center"><p><font color="white">TWEET</font></p></td>
+                      <td align="center" colspan="2"><p><font color="white">COORDINATES</font></p></td>
+                    </tr>
+                    {% for tagged, by in user_taggeds.items() %}
+                    <tr>
+                      <td align="center" colspan="2"><p class="table_results"><a href="https://instagram.com/{{ tagged}}" target="_blank">{{ tagged }}</a></p></td>
+
+                      <td align="center"><p class="table_results">
+                        <a href="{{ by[3] }}" target="_blank"><img src="{{ by[3] }}" width=100 height=100 border="1"></a>
+                      </p></td>
+                      <td align="center"><p class="table_results"><a href="https://twitter.com/{{ by[0] }}" target="_blank">@{{ by[0] }}</a>
+                      <br>{{ by[4] }}<br>{{ by[5] }}
+                      </p></td>
+
+		      <td align="center"><p class="table_results"><a href="{{ by[1] }}" target="_blank"><img src="{{ by[1] }}" height=100 width=100 border="1"></a></p></td>
+		      <td align="center"><p class="table_results"><a href="https://twitter.com/{{ by[0] }}/status/{{ by[2] }}" target="_blank">view</a></p></td>
+          <td align="center" colspan=2><p class="table_results"><a href='https://maps.google.com/maps?f=q&source=s_q&hl=es&geocode=&q={{ by[6].replace("[","").replace("]","") }}&t=h&z=19&vpsrc=6&iwloc=A' target="_blank">{{ by[6].replace("[","").replace("]","") }}</a></td>
+                    </tr>
+		    {% endfor %}
+                     
+                                  </table>
+              <p class="results">Total: {{ user_taggeds_count }} results.</p>
+              {% endif %}    
+            </div><!--#end search table--> 
+
+
+            <div id="conversations">
+                <a id="conversation" name="conversation"></a>
+                <h3>User Conversations</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_conversation %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td><p>Total conversations: {{ conversations_number }}</p><br></td>
+                    </tr>
+
+                    {% for conversation_id, tweets in conversations %} 
+                    <table class="client_conversations" width="970" border="0" cellspacing="10" cellpadding="10">
+                    <tr>
+                      <td bgcolor="#AACCDDEE" colspan=5>Conversation #{{ conversation_id }}</td>
+                      <td bgcolor="#AACCDDEE" colspan=2 align="right">{{ conversations_messages[conversation_id] }} messages</td>
+                    </tr>
+
+                    {% for tweet in tweets %}    
+                    <tr>
+                      {% if tweet[8] == "left" %}
+
+                      <td valign="top" align="right" colspan=2><p class="table_results">                    
+                      <a href="https://twitter.com/{{ tweet[4] }}" target="_blank"><img src="{{ tweet[5].replace('_normal.jpeg', '_400x400.jpeg').replace('_normal.jpg', '_400x400.jpg') }}" width=60 height=60 border="0"></a>
+                      <br>
+                      <font size="-1">{{ tweet[7] }}</font>
+                      </p></td>
+                    
+                      <td valign="top" colspan=2 bgcolor="#A9A9A9"><p class="table_results">
+                      <a href="https://twitter.com/{{ tweet[4] }}/status/{{ tweet[0] }}" target="_blank">{{ tweet[1] }}</a>
+                      <br><br>
+                      <font size="-1"><a href="https://twitter.com/{{ tweet[4] }}" target="_blank">@{{ tweet[4] }}</a> {{ tweet[10] }} on {{ tweet[2] }} - {{ tweet[3] }}</font>
+                      <br><br>
+                      <font size="-1">[ <b>ID</b>: {{ tweet[0] }}, <b>IN REPLY</b>: {{ tweet[11] }} ]</font>
+                      <br>
+                      </p></td>
+
+                      <td><p></p></td>
+                      <td><p></p></td>
+                      <td><p></p></td>
+                      
+                      {% else %}                      
+
+                      <td><p></p></td>
+                      <td><p></p></td>
+                      <td><p></p></td>
+                  
+                      <td valign="top" colspan=2 bgcolor="#D0D0D0"><p class="table_results">
+                      <a href="https://twitter.com/{{ tweet[4] }}/status/{{ tweet[0] }}" target="_blank">{{ tweet[1] }}</a>
+                      <br><br>
+                      <font size="-1"><a href="https://twitter.com/{{ tweet[4] }}" target="_blank">@{{ tweet[4] }}</a> {{ tweet[10] }} on {{ tweet[2] }} - {{ tweet[3] }}</font>
+                      <br><br>
+                      <font size="-1">[ <b>ID</b>: {{ tweet[0] }}, <b>IN REPLY</b>: {{ tweet[11] }} ]</font>
+                      <br>
+                      </p></td>
+
+                      <td valign="top" align="left" colspan=2><p class="table_results">                    
+                      <a href="https://twitter.com/{{ tweet[4] }}" target="_blank"><img src="{{ tweet[5].replace('_normal.jpeg', '_400x400.jpeg').replace('_normal.jpg', '_400x400.jpg') }}" width=60 height=60 border="0"></a>
+                      <br>
+                      <font size="-1">{{ tweet[7] }}</font>
+                      </p></td>
+
+
+                      {% endif %}
+                      
+                    </tr> 
+                    {% endfor %}
+
+                    </table>
+                    <br><br>
+                    {% endfor %}
+                </table>
+              
+                
+                {% endif %}
+            </div><!--#end conversations-->
+            <br>
+
+            <div id="protected">
+                <a id="protected" name="protected"></a>
+                <h3>Protected Account</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <hr/>
+                {% if not output_protected %}
+                <table class="client_app" width="970" border="0">
+                    <tr>
+                      <td>Unsolicited Function</td>
+                    </tr>
+                </table>
+                {% else %}
+
+
+                <h2>Followed by</h2>
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25" align="center"><p><font color="white">PROFILE IMG</font></p></td>
+                        <td height="25" align="center"><p><font color="white">PROFILE BANNER</font></p></td>
+                      <td align="center"><p><font color="white">SCREEN NAME</font></p></td>
+                      <td align="center" colspan="2"><p><font color="white">USER NAME</font></p></td>
+                        <td align="center"><p><font color="white">PROTECTED</font></p></td>
+                      <td align="center" colspan="2"><p><font color="white">LOCATION</font></p></td>
+                      <td align="center" colspan="2"><p><font color="white">CREATED AT</font></p></td>
+                      <td align="center"><p><font color="white">FOLLOWERS</font></p></td>
+                      <td align="center"><p><font color="white">FRIENDS</font></p></td>
+                    </tr>
+                    {% for user in following_users %}
+                    <tr>
+                      <td align="center"><p class="table_results">
+                        <a href="{{ user.profile_image_url.replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ user.profile_image_url.replace('.jpg', '_400x400.jpg') }}" target="_blank" alt="usuario" width="100" height="100"></a>
+                      </p></td>
+
+                      <td align="center"><p class="table_results">
+                        <a href="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank" width="100" height="100"></a>
+                      </p></td>
+
+                      <td align="center"><p class="table_results"><a href="https://twitter.com/{{ user.screen_name }}" target="_blank">@{{ user.screen_name }}</a></p></td>
+                        <td align="center" colspan="2"><p class="table_results">{{ user.name }}</p></td>
+                        <td align="center"><p class="table_results">{{ user.protected }}</p></td>
+                        <td align="center" colspan="2"><p class="table_results">{{ user.location }}</p></td>
+                      <td align="center" colspan="2"><p class="table_results">{{ user.created_at }}</p></td>
+                          <td align="center"><p class="table_results"><a href="http://www.twitter.com/{{ user.screen_name }}/followers" target="_blank">{{ user.followers_count }}</a></p></td>
+                        <td align="center"><p class="table_results"><a href="https://twitter.com/{{ user.screen_name }}/following" target="_blank">{{ user.friends_count }}</a></p></td>
+
+                    </tr>
+		    {% endfor %}
+
+                                  </table>
+              <p class="results">Total: {{ following_count }} results.</p>
+
+                <h2>Following</h2>
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25" align="center"><p><font color="white">PROFILE IMG</font></p></td>
+                        <td height="25" align="center"><p><font color="white">PROFILE BANNER</font></p></td>
+                      <td align="center"><p><font color="white">SCREEN NAME</font></p></td>
+                      <td align="center" colspan="2"><p><font color="white">USER NAME</font></p></td>
+                        <td align="center"><p><font color="white">PROTECTED</font></p></td>
+                      <td align="center" colspan="2"><p><font color="white">LOCATION</font></p></td>
+                      <td align="center" colspan="2"><p><font color="white">CREATED AT</font></p></td>
+                      <td align="center"><p><font color="white">FOLLOWERS</font></p></td>
+                      <td align="center"><p><font color="white">FRIENDS</font></p></td>
+                    </tr>
+                    {% for user in followedby_users %}
+                    <tr>
+                      <td align="center"><p class="table_results">
+                        <a href="{{ user.profile_image_url.replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ user.profile_image_url.replace('.jpg', '_400x400.jpg') }}" target="_blank" alt="usuario" width="100" height="100"></a>
+                      </p></td>
+
+                      <td align="center"><p class="table_results">
+                        <a href="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank" width="100" height="100"></a>
+                      </p></td>
+
+                      <td align="center"><p class="table_results"><a href="https://twitter.com/{{ user.screen_name }}" target="_blank">@{{ user.screen_name }}</a></p></td>
+                        <td align="center" colspan="2"><p class="table_results">{{ user.name }}</p></td>
+                        <td align="center"><p class="table_results">{{ user.protected }}</p></td>
+                        <td align="center" colspan="2"><p class="table_results">{{ user.location }}</p></td>
+                      <td align="center" colspan="2"><p class="table_results">{{ user.created_at }}</p></td>
+                          <td align="center"><p class="table_results"><a href="http://www.twitter.com/{{ user.screen_name }}/followers" target="_blank">{{ user.followers_count }}</a></p></td>
+                        <td align="center"><p class="table_results"><a href="https://twitter.com/{{ user.screen_name }}/following" target="_blank">{{ user.friends_count }}</a></p></td>
+
+                    </tr>
+		    {% endfor %}
+
+                                  </table>
+              <p class="results">Total: {{ followedby_count }} results.</p>
+
+                <h2>Tweets</h2>
+                <table class="client_app" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25" align="center" colspan="4"><p><font color="white">TWEET</font></p></td>
+                      <td align="center"><p><font color="white">PROFILE IMG</font></p></td>
+                      <td align="center"><p><font color="white">SCREEN NAME</font></p></td>
+                      <td align="center" colspan="2"><p><font color="white">USER NAME</font></p></td>
+                      <td align="center" colspan="2"><p><font color="white">CREATED AT</font></p></td>
+                        <td align="center" colspan="2"><p><font color="white">SOURCE APP</font></p></td>
+                    </tr>
+                    {% for tweet in protected_tweets %}
+                    <tr>
+                      <td align="center" colspan="4"><p class="table_results">
+                        <a href="https://twitter.com/{{ tweet.user.screen_name }}/status/{{ tweet.id }}" target="_blank">{{ tweet.text }}</a>
+                      </p></td>
+                      <td align="center"><p class="table_results">
+                        <a href="{{ tweet.user.profile_image_url.replace('_normal.', '.') }}" target="_blank"><img src="{{ tweet.user.profile_image_url.replace('_normal.', '.') }}" target="_blank" alt="usuario" width="100" height="100"></a>
+                      </p></td>
+                      <td align="center"><p class="table_results">
+                        <a href="https://twitter.com/{{ tweet.user.screen_name }}" target="_blank">@{{ tweet.user.screen_name }}</a>
+                      </p></td>
+                      <td align="center" colspan="2"><p class="table_results">
+                        {{ tweet.user.name }}
+                      </p></td>
+                      <td align="center" colspan="2"><p class="table_results">
+                        {{ tweet.created_at }}
+                      </p></td>
+                      <td align="center" colspan="2"><p class="table_results">
+                        {{ tweet.source }}
+                      </p></td>
+
+                   </tr>
+		    {% endfor %}
+
+                                  </table>
+              <p class="results">Total: {{ protected_tweets_count }} results.</p>
+
+
+                {% endif %}
+            </div><!--#end protedted account-->
+            <p class="results"><br></p>
+
+
+        </div><!--#end datos-->
+        <div id="footer">
+        <p class="footer">www.vicenteaguileradiaz.com</p>
+        <p class="footer_link"><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img class="CC" alt="Licencia de Creative Commons" border="0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br /><span class="footer_link" xmlns:dct="http://purl.org/dc/terms/" property="dct:title"><b>Tinfoleak</b></span> by <span xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName">Vicente Aguilera Díaz</span> is licensed under a <a class="footer_link" rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Reconocimiento-CompartirIgual 4.0 Internacional License</a>.</p>
+        </div>
+</div>  <!--#end contenido-->
+</body>
+</html>
+
