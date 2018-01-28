@@ -3,7 +3,7 @@ The most complete open-source tool for Twitter intelligence analysis
 
 ### Introduction
 <p align="justify">
-<b>tinfoleak</b> is an open-source tool within the OSINT (Open Source Intelligence) and SOCMINT (Social Media Intelligence) disciplines, that automates the extraction of information on Twitter and facilitates subsequent analysis for the generation of intelligence. Taking a user identifier, geographic coordinates or keywords, Tinfoleak analyzes the Twitter timeline to extract great volumes of data and show useful and structured information to the intelligence analyst. 
+<b>tinfoleak</b> is an open-source tool within the OSINT (Open Source Intelligence) and SOCMINT (Social Media Intelligence) disciplines, that automates the extraction of information on Twitter and facilitates subsequent analysis for the generation of intelligence. Taking a user identifier, geographic coordinates or keywords, <b>tinfoleak</b> analyzes the Twitter timeline to extract great volumes of data and show useful and structured information to the intelligence analyst. 
 </p>
 
 <p align="justify">
