@@ -4,21 +4,23 @@ The most complete open-source tool for Twitter intelligence analysis
 ### Introduction
 <p align="justify">
 <b>tinfoleak</b> is an open-source tool within the OSINT (Open Source Intelligence) and SOCMINT (Social Media Intelligence) disciplines, that automates the extraction of information on Twitter and facilitates subsequent analysis for the generation of intelligence. Taking a user identifier, geographic coordinates or keywords, Tinfoleak analyzes the Twitter timeline to extract great volumes of data and show useful and structured information to the intelligence analyst. 
+</p>
 
-<b>tinfoleak</b> is included in several Linux Distros: Kali, CAINE, BlackArch and Buscador. It is currently the most comprehensive open-source tool for intelligence analysis on Twitter.
+<p align="justify">
+<b>tinfoleak</b> is included in several Linux Distros: <a href="https://www.kali.org/">Kali</a>, < href="http://www.caine-live.net/">CAINE</a>, <a href="http://blackarch.org/">BlackArch</a> and <a href="https://inteltechniques.com/buscador/">Buscador</a>. It is currently the most comprehensive open-source tool for intelligence analysis on Twitter.
+</p>
 
 <b>tinfoleak</b> can extract the following information:
 - Account info / User Activity / Protected Accounts
 - Source Applications / User Devices / Use Frequency
 - Hashtags / Mentions / Likes
 - Text Analysis / Words Frequency / Media / Metadata
-- Visited Places / Routes / Top Locations
+- User Visited Places / User Routes / User Top Locations
 - Social Networks / Digital Identities
 - Geolocated Users / Tagged Users
 - Followers / Friends
 - Lists / Collections
 - Conversations
-</p>
 
 ### License
 <b>tinfoleak</b> is released under the CC-BY-SA-4.0 license. See the <a href="https://github.com/vaguileradiaz/tinfoleak/blob/master/LICENSE.txt">LICENSE.txt</a> file for additional details.
