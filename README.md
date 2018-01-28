@@ -2,11 +2,12 @@
 The most complete open-source tool for Twitter intelligence analysis
 
 ### Introduction
-** tinfoleak ** is an open-source tool within the OSINT (Open Source Intelligence) and SOCMINT (Social Media Intelligence) disciplines, that automates the extraction of information on Twitter and facilitates subsequent analysis for the generation of intelligence. Taking a user identifier, geographic coordinates or keywords, Tinfoleak analyzes the Twitter timeline to extract great volumes of data and show useful and structured information to the intelligence analyst. 
+<p align="justify">
+<b>tinfoleak</b> is an open-source tool within the OSINT (Open Source Intelligence) and SOCMINT (Social Media Intelligence) disciplines, that automates the extraction of information on Twitter and facilitates subsequent analysis for the generation of intelligence. Taking a user identifier, geographic coordinates or keywords, Tinfoleak analyzes the Twitter timeline to extract great volumes of data and show useful and structured information to the intelligence analyst. 
 
-** infoleak ** is included in several Linux Distros: Kali, CAINE, BlackArch and Buscador. It is currently the most comprehensive open-source tool for intelligence analysis on Twitter.
+<b>tinfoleak</b> is included in several Linux Distros: Kali, CAINE, BlackArch and Buscador. It is currently the most comprehensive open-source tool for intelligence analysis on Twitter.
 
-** tinfoleak ** can extract the following information:
+<b>tinfoleak</b> can extract the following information:
 - Account info / User Activity / Protected Accounts
 - Source Applications / User Devices / Use Frequency
 - Hashtags / Mentions / Likes
@@ -17,9 +18,10 @@ The most complete open-source tool for Twitter intelligence analysis
 - Followers / Friends
 - Lists / Collections
 - Conversations
+</p>
 
 ### License
-tinfoleak is released under the CC-BY-SA-4.0 license. See the <a href="https://github.com/vaguileradiaz/tinfoleak/blob/master/LICENSE.txt">LICENSE.txt</a> file for additional details.
+<b>tinfoleak</b> is released under the CC-BY-SA-4.0 license. See the <a href="https://github.com/vaguileradiaz/tinfoleak/blob/master/LICENSE.txt">LICENSE.txt</a> file for additional details.
 
 ### Installation
 Install Python and dependencies:
