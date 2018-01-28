@@ -40,6 +40,24 @@ sudo pip install --upgrade oauth2
 ```
 
 ### Getting started
+The first time you runs <b>tinfoleak</b>, you need to assign the OAuth settings.
+
+1. Edit "tinfoleak.conf"
+Use your favorite editor ;-)
+
+2. Give value to these variables:
+CONSUMER_KEY
+CONSUMER_SECRET
+ACCESS_TOKEN
+ACCESS_TOKEN_SECRET
+
+How to obtain these values:
+https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens
+
+3. Save "tinfoleak.conf"
+
+4. Execute "tinfoleak.py"
+
 <p align="center">
   <img src="https://github.com/vaguileradiaz/tinfoleak/blob/master/doc/images/tinfoleak-noparameters.png" />
 </p>
