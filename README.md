@@ -2,6 +2,21 @@
 The most complete open-source tool for Twitter intelligence analysis
 
 ### Introduction
+** tinfoleak ** is an open-source tool within the OSINT (Open Source Intelligence) and SOCMINT (Social Media Intelligence) disciplines, that automates the extraction of information on Twitter and facilitates subsequent analysis for the generation of intelligence. Taking a user identifier, geographic coordinates or keywords, Tinfoleak analyzes the Twitter timeline to extract great volumes of data and show useful and structured information to the intelligence analyst. 
+
+** infoleak ** is included in several Linux Distros: Kali, CAINE, BlackArch and Buscador. It is currently the most comprehensive open-source tool for intelligence analysis on Twitter.
+
+** tinfoleak ** can extract the following information:
+- Account info / User Activity / Protected Accounts
+- Source Applications / User Devices / Use Frequency
+- Hashtags / Mentions / Likes
+- Text Analysis / Words Frequency / Media / Metadata
+- Visited Places / Routes / Top Locations
+- Social Networks / Digital Identities
+- Geolocated Users / Tagged Users
+- Followers / Friends
+- Lists / Collections
+- Conversations
 
 ### License
 tinfoleak is released under the CC-BY-SA-4.0 license. See the <a href="https://github.com/vaguileradiaz/tinfoleak/blob/master/LICENSE.txt">LICENSE.txt</a> file for additional details.
