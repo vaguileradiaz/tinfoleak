@@ -42,8 +42,8 @@ sudo pip install --upgrade oauth2
 ### Getting started
 The first time you runs <b>tinfoleak</b>, you need to assign the OAuth settings.
 
-> 1. Edit "tinfoleak.conf"
-> Use your favorite editor ;-)
+> 1. Edit "tinfoleak.conf" <br>
+> Use your favorite editor ;-) 
 
 > 2. Give value to these variables: <br>
 > CONSUMER_KEY <br>
