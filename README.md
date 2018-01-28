@@ -7,7 +7,7 @@ The most complete open-source tool for Twitter intelligence analysis
 </p>
 
 <p align="justify">
-<b>tinfoleak</b> is included in several Linux Distros: <a href="https://www.kali.org/">Kali</a>, < href="http://www.caine-live.net/">CAINE</a>, <a href="http://blackarch.org/">BlackArch</a> and <a href="https://inteltechniques.com/buscador/">Buscador</a>. It is currently the most comprehensive open-source tool for intelligence analysis on Twitter.
+<b>tinfoleak</b> is included in several Linux Distros: <a href="https://www.kali.org/">Kali</a>, <a href="http://www.caine-live.net/">CAINE</a>, <a href="http://blackarch.org/">BlackArch</a> and <a href="https://inteltechniques.com/buscador/">Buscador</a>. It is currently the most comprehensive open-source tool for intelligence analysis on Twitter.
 </p>
 
 <b>tinfoleak</b> can extract the following information:
@@ -23,7 +23,7 @@ The most complete open-source tool for Twitter intelligence analysis
 - Conversations
 
 ### License
-<b>tinfoleak</b> is released under the CC-BY-SA-4.0 license. See the <a href="https://github.com/vaguileradiaz/tinfoleak/blob/master/LICENSE.txt">LICENSE.txt</a> file for additional details.
+<b>tinfoleak</b> is released under the <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC-BY-SA-4.0</a> license. See the <a href="https://github.com/vaguileradiaz/tinfoleak/blob/master/LICENSE.txt">LICENSE.txt</a> file for additional details.
 
 ### Installation
 Install Python and dependencies:
