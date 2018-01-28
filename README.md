@@ -45,11 +45,11 @@ The first time you runs <b>tinfoleak</b>, you need to assign the OAuth settings.
 > 1. Edit "tinfoleak.conf"
 > Use your favorite editor ;-)
 
-> 2. Give value to these variables:
-> CONSUMER_KEY
-> CONSUMER_SECRET
-> ACCESS_TOKEN
-> ACCESS_TOKEN_SECRET
+> 2. Give value to these variables: <br>
+> CONSUMER_KEY <br>
+> CONSUMER_SECRET <br>
+> ACCESS_TOKEN <br>
+> ACCESS_TOKEN_SECRET <br>
 
 > How to obtain these values:
 > https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens
