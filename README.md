@@ -50,9 +50,8 @@ The first time you runs <b>tinfoleak</b>, you need to assign the OAuth settings.
 > CONSUMER_SECRET <br>
 > ACCESS_TOKEN <br>
 > ACCESS_TOKEN_SECRET <br>
-> <br>
-> How to obtain these values: <br>
-> https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens
+> - How to obtain these values: <br>
+> - https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens
 
 > 3. Save "tinfoleak.conf"
 
