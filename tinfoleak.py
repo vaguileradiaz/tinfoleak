@@ -93,7 +93,8 @@ class Configuration():
 		try:
 			# Read tinfoleak configuration file ("tinfoleak.conf")
 			config = ConfigParser.RawConfigParser()
-			config.read('tinfoleak.conf')
+			config_path = os.path.abspath(os.path.dirname(sys.argv[0])) + '/tinfoleak.conf'
+			config.read(config_path)
 
 			CONSUMER_KEY = config.get('Twitter OAuth', 'CONSUMER_KEY')
 			CONSUMER_SECRET = config.get('Twitter OAuth', 'CONSUMER_SECRET')
