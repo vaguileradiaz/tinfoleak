@@ -58,5 +58,5 @@ The first time you runs <b>tinfoleak</b>, you need to assign the OAuth settings.
 > 4. Execute "tinfoleak.py"
 
 <p align="center">
-  <img src="https://github.com/vaguileradiaz/tinfoleak/blob/master/doc/images/tinfoleak-noparameters.png" />
+  <img src="https://github.com/vaguileradiaz/tinfoleak/blob/master/doc/images/tinfoleak-ui.png" />
 </p>
