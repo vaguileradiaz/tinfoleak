@@ -3699,7 +3699,7 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 		if not os.path.exists(parameters.html_output_directory) :
 			os.makedirs(parameters.html_output_directory)
 
-		output_report_filename = parameters.html_output_directory + "/" + ui.tb_report_filename.text()
+		output_report_filename = parameters.html_output_directory + "/" + str(ui.tb_report_filename.text())
 		if os.path.exists(output_report_filename):
 			os.remove(output_report_filename)
 		f = open(output_report_filename, "w")
