@@ -172,7 +172,7 @@ var myChart3 = new Chart(ctx3, {
             <ul class="button">
         <li><a href="#activity">User Activity</a></li>
 				<li><a href="#client_apps">Source Apps</a></li>
-				<li><a href="#social">Social ID</a></li>
+				<li><a href="#social">Social Networks</a></li>
 				<li><a href="#hashtags">Hashtags</a></li>
 				<li><a href="#user_mentions">Mentions</a></li>
         <li><a href="#favourites">Likes</a></li>
@@ -184,8 +184,8 @@ var myChart3 = new Chart(ctx3, {
                 <br>
               <ul class="button">
 				<li><a href="#media">Media</a></li>
-				<li><a href="#geo">Geolocation</a></li>
-				<li><a href="#search">Places</a></li>
+				<li><a href="#geo">User Geolocation</a></li>
+				<li><a href="#search">Place</a></li>
         <li><a href="#conversation">Conversations</a></li>
                   <li><a href="#protected">Protected Account</a></li>
 			</ul>
@@ -231,32 +231,42 @@ var myChart3 = new Chart(ctx3, {
                 <table class="client_activity" width="970" border="0">
                     <tr bgcolor="1c75bc">
                       <td height="25"><p align="center"><font color="white">TYPE</font></p></td>
-                      <td><p align="center"><font color="white">NUMBER</font></p></td>
-                      <td><p align="center"><font color="white">PERCENTAGE</font></p></td>
+                      <td height="25"><p align="center"><font color="white">USES</font></p></td>
+                      <td height="25"><p align="center"><font color="white">PERCENTAGE</font></p></td>
+                      <td height="25"><p align="center"><font color="white">RETWEETS NUMBER</font></p></td>
+                      <td height="25"><p align="center"><font color="white">LIKES NUMBER</font></p></td>
                     </tr>
 
                     <tr>
                       <td><p class="table_results" align="center">Tweet</p></td>
                       <td><p class="table_results" align="center">{{ activity_tweet }}</p></td>
                       <td><p class="table_results" align="center">{{ activity_tweet_percent }}%</p></td>
+                      <td><p class="table_results" align="center">{{ activity_tweet_retweets }}</p></td>
+                      <td><p class="table_results" align="center">{{ activity_tweet_likes }}</p></td>
                     </tr>
 
                     <tr>
                       <td><p class="table_results" align="center">Retweet</p></td>
                       <td><p class="table_results" align="center">{{ activity_retweet }}</p></td>
-                      <td><p class="table_results" align="center">{{ activity_retweet_percent }}%</p></td>                    
+                      <td><p class="table_results" align="center">{{ activity_retweet_percent }}%</p></td>
+                      <td><p class="table_results" align="center">-</p></td>
+                      <td><p class="table_results" align="center">-</p></td>
                     </tr>
 
                     <tr>
                       <td><p class="table_results" align="center">URL</p></td>
                       <td><p class="table_results" align="center">{{ activity_url }}</p></td>
                       <td><p class="table_results" align="center">{{ activity_url_percent }}%</p></td>
+                      <td><p class="table_results" align="center">-</p></td>
+                      <td><p class="table_results" align="center">-</p></td>
                     </tr>
 
                     <tr>
                       <td><p class="table_results" align="center">Media</p></td>
                       <td><p class="table_results" align="center">{{ activity_media }}</p></td>
                       <td><p class="table_results" align="center">{{ activity_media_percent }}%</p></td>
+                      <td><p class="table_results" align="center">-</p></td>
+                      <td><p class="table_results" align="center">-</p></td>
                     </tr>
 
                 </table>
@@ -311,6 +321,23 @@ var myChart = new Chart(ctx, {
 });
 
 </script>
+                <br><br>
+
+                <table class="client_activity" width="970" border="0">
+                    <tr bgcolor="1c75bc">
+                      <td height="25"><p align="left"><font color="white">SHARED URLs</font></p></td>
+                    </tr>
+
+                    {% for url in activity_expanded_url %}
+                    <tr>
+                      <td><p class="table_results" align="left"><a href="{{ url }}" target="_blank">{{ url }}</a></p></td>
+                    </tr>
+                    {% endfor %}
+
+                </table>
+                <p class="results">Total: {{ activity_expanded_url_count }} results.</p>
+                <br><br>
+
 
 
 
@@ -669,7 +696,7 @@ var myChart = new Chart(ctx, {
                       </td>
                       <td>
                         <p class="table_results" align="center">
-                          {% if info[2][2] %}
+                          {% if info[2][2] != "?" %}
                           <a href="{{ info[2][2] }}" target="_blank">
                             <img src="{{ info[2][2] }}" target="_blank" width="100" height="100" border="1">
                           </a>
@@ -1545,7 +1572,7 @@ var myChart = new Chart(ctx, {
             <!--top words table-->            
             <div id="client_apps">
             <a id="topwords" name="topwords"></a>
-                <h3>Words Most used</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <h3>Words Frequency</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
                 <hr/>
                 {% if not output_words %}
                 <table class="client_app" width="970" border="0">
@@ -1861,7 +1888,7 @@ var myChart = new Chart(ctx, {
             <!--geo table-->            
             <div id="client_apps">
             <a id="geo" name="geo"></a>
-                <h3>Geolocation Information</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <h3>User Geolocation</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
                 <hr/>
                 {% if not output_geolocation %}
                 <table class="client_app" width="970" border="0">
@@ -2095,7 +2122,7 @@ var myChart = new Chart(ctx, {
             <!--geo table-->            
             <div id="client_apps">
             <a id="search" name="search"></a>
-                <h3>Search by Coordinates</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
+                <h3>Place</h3> <a href="#top"><img class="arrow_up" src="img/arrow-up2.png" alt="up" title="up"/></a>
                 <hr/>
                 {% if not output_search %}
                 <table class="client_app" width="970" border="0">
@@ -2105,58 +2132,7 @@ var myChart = new Chart(ctx, {
                 </table>
                 {% else %}
 
-                <h2>Advanced Search</h2>
-                {% if output_search_nocoord != "*" %}
-                <table class="client_app" width="970" border="0">
-                    <tr>
-                      <td>Unsolicited Function</td>
-                    </tr>
-                </table>
-                <br><br>
-                {% else %}
-
-                <table class="client_app" width="970" border="0">
-                    <tr bgcolor="1c75bc">
-                      <td height="25"><p align="center"><font color="white">DATE</font></p></td>
-                      <td><p align="center"><font color="white">TIME</font></p></td>
-                      <td colspan="5"><p><font color="white">TWEET</font></p></td>
-                      <td><p align="center"><font color="white">MEDIA</font></p></td>
-                      <td colspan="2"><p><font color="white">APPLICATION</font></p></td>
-                      <td><p align="center"><font color="white">PROFILE IMG</font></p></td>
-                      <td><p align="center"><font color="white">USER</font></p></td>
-                    </tr>
-                    {% for info in adv_geo_info %}
-                    <tr>
-                      <td align="center"><p class="table_results">{{ info[3] }}</p></td>
-                      <td align="center"><p class="table_results">{{ info[4] }}</p></td>
-                      <td colspan=5><p class="table_results"><a href="https://twitter.com/{{ info[1] }}/status/{{ info[5] }}" target="_blank">{{ info[14] }}</a></td>
-                      {% if info[8] == "" %}
-                      <td align="center"><p class="table_results">
-                          <img src="img/no-image-icon.gif" target="_blank" width="100" height="100" border="1">
-                      {% endif %}
-                      {% if info[8] == "Image" %}
-                      <td align="center"><p class="table_results">
-                          <a href="{{ info[2] }}" target="_blank"><img src="{{ info[2] }}" width=100 height=100 border="1"></a>
-                      {% endif %}
-                      {% if info[8] == "Video" %}
-                      <td  align="center" bgcolor="{{ user_color }}"><p class="table_results">
-                          <a href="{{ info[2] }}" target="_blank">
-                          <video src="{{ info[2] }}" width=100 height=100 border="1" controls>Video</video>
-                          </a>
-                      {% endif %}
-                      </p></td>
-
-          <td colspan=2><p class="table_results">{{ info[7] }}</p></td>
-          <td align="center"><p class="table_results"><a href="{{ info[10] }}" target="_blank"><img src="{{ info[10] }}" width=100 height=100 border="1"></a></p></td>
-          <td align="center"><p class="table_results"><a href="https://twitter.com/{{ info[1] }}" target="_blank">@{{ info[1] }}</a></p></td>
-                    </tr>
-        {% endfor %}
-                                  </table>
-              <p class="results">Total: {{ adv_geo_count }} results.</p>
-        {% endif %}
-
-
-                <h2>Search by coordinates</h2>
+                <h2>Place</h2>
                 {% if output_search_nocoord == "*" %}
                 <table class="client_app" width="970" border="0">
                     <tr>
@@ -2407,8 +2383,10 @@ var myChart = new Chart(ctx, {
                         <td align="center"><p><font color="white">PROTECTED</font></p></td>
                       <td align="center" colspan="2"><p><font color="white">LOCATION</font></p></td>
                       <td align="center" colspan="2"><p><font color="white">CREATED AT</font></p></td>
+<!--
                       <td align="center"><p><font color="white">FOLLOWERS</font></p></td>
                       <td align="center"><p><font color="white">FRIENDS</font></p></td>
+-->
                     </tr>
                     {% for user in following_users %}
                     <tr>
@@ -2417,7 +2395,7 @@ var myChart = new Chart(ctx, {
                       </p></td>
 
                       <td align="center"><p class="table_results">
-                        <a href="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank" width="100" height="100"></a>
+                        <a href="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank" width="300" height="100"></a>
                       </p></td>
 
                       <td align="center"><p class="table_results"><a href="https://twitter.com/{{ user.screen_name }}" target="_blank">@{{ user.screen_name }}</a></p></td>
@@ -2425,9 +2403,10 @@ var myChart = new Chart(ctx, {
                         <td align="center"><p class="table_results">{{ user.protected }}</p></td>
                         <td align="center" colspan="2"><p class="table_results">{{ user.location }}</p></td>
                       <td align="center" colspan="2"><p class="table_results">{{ user.created_at }}</p></td>
+<!--
                           <td align="center"><p class="table_results"><a href="http://www.twitter.com/{{ user.screen_name }}/followers" target="_blank">{{ user.followers_count }}</a></p></td>
                         <td align="center"><p class="table_results"><a href="https://twitter.com/{{ user.screen_name }}/following" target="_blank">{{ user.friends_count }}</a></p></td>
-
+-->
                     </tr>
 		    {% endfor %}
 
@@ -2444,8 +2423,10 @@ var myChart = new Chart(ctx, {
                         <td align="center"><p><font color="white">PROTECTED</font></p></td>
                       <td align="center" colspan="2"><p><font color="white">LOCATION</font></p></td>
                       <td align="center" colspan="2"><p><font color="white">CREATED AT</font></p></td>
+<!--
                       <td align="center"><p><font color="white">FOLLOWERS</font></p></td>
                       <td align="center"><p><font color="white">FRIENDS</font></p></td>
+-->
                     </tr>
                     {% for user in followedby_users %}
                     <tr>
@@ -2454,7 +2435,7 @@ var myChart = new Chart(ctx, {
                       </p></td>
 
                       <td align="center"><p class="table_results">
-                        <a href="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank" width="100" height="100"></a>
+                        <a href="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank"><img src="{{ user.profile_banner_url.replace('.jpg', '_400x400.jpg') }}" target="_blank" width="300" height="100"></a>
                       </p></td>
 
                       <td align="center"><p class="table_results"><a href="https://twitter.com/{{ user.screen_name }}" target="_blank">@{{ user.screen_name }}</a></p></td>
@@ -2462,8 +2443,10 @@ var myChart = new Chart(ctx, {
                         <td align="center"><p class="table_results">{{ user.protected }}</p></td>
                         <td align="center" colspan="2"><p class="table_results">{{ user.location }}</p></td>
                       <td align="center" colspan="2"><p class="table_results">{{ user.created_at }}</p></td>
+<!--
                           <td align="center"><p class="table_results"><a href="http://www.twitter.com/{{ user.screen_name }}/followers" target="_blank">{{ user.followers_count }}</a></p></td>
                         <td align="center"><p class="table_results"><a href="https://twitter.com/{{ user.screen_name }}/following" target="_blank">{{ user.friends_count }}</a></p></td>
+-->
 
                     </tr>
 		    {% endfor %}
