@@ -11,7 +11,7 @@ The most complete open-source tool for Twitter intelligence analysis
 </p>
 
 <b>tinfoleak</b> can extract the following information:
-- Account info / User Activity / Protected Accounts
+- Account info / User Activity / Protected Accounts / User Relations
 - Source Applications / User Devices / Use Frequency
 - Hashtags / Mentions / Likes
 - Text Analysis / Words Frequency / Media / Metadata
