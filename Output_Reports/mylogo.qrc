@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="tinfoleak">
+    <file>img/tinfoleak-logo-interface.png</file>
+  </qresource>
+</RCC>
