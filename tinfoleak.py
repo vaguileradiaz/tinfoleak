@@ -6,7 +6,7 @@
 # https://creativecommons.org/licenses/by-sa/4.0/
 
 """
-Tinfoleak - The most complete open-source tool for Twitter intelligence analysis 
+Tinfoleak - The most complete open-source tool for Twitter intelligence analysis
 	:author: 	Vicente Aguilera Diaz
 	:version: 	2.3
 
@@ -62,28 +62,20 @@ import oauth2 as oauth
 import operator
 import random
 
-reload(sys)  
+from PyQt4 import QtGui, QtCore
+import main_window
+import users_window
+import relations_window
+import lists_window
+import collections_window
+import followers_window
+import friends_window
+
+
+reload(sys)
 sys.setdefaultencoding('utf8')
 
-# ----------------------------------------------------------------------
-def credits(parameters):
-	"""Show program credits"""
 
-	print "  _______ _        __      _            _    "
-	print " |__   __(_)      / _|    | |          | |   "
-	print "    | |   _ _ __ | |_ ___ | | ___  __ _| | __"
-	print "    | |  | | '_ \|  _/ _ \| |/ _ \/ _` | |/ /"
-	print "    | |  | | | | | || (_) | |  __/ (_| |   < "
-	print "    |_|  |_|_| |_|_| \___/|_|\___|\__,_|_|\_\\"
-   
-	print
-	print "\t" + parameters.program_name + " " + parameters.program_version + " - \"The most complete open-source tool for Twitter intelligence analysis\""
-	print "\t" + parameters.program_author_name + ". Twitter: " + parameters.program_author_twitter
-	print "\t" + parameters.program_author_companyname
-	print "\t" + parameters.program_date
-	print 
-
- 
 # ==========================================================================
 class Configuration():
 	"""Configuration information"""
@@ -91,6 +83,7 @@ class Configuration():
 	# ----------------------------------------------------------------------
 	def __init__(self):
 		try:
+
 			# Read tinfoleak configuration file ("tinfoleak.conf")
 			config = ConfigParser.RawConfigParser()
 			config_path = os.path.abspath(os.path.dirname(sys.argv[0])) + '/tinfoleak.conf'
@@ -99,12 +92,12 @@ class Configuration():
 			CONSUMER_KEY = config.get('Twitter OAuth', 'CONSUMER_KEY')
 			CONSUMER_SECRET = config.get('Twitter OAuth', 'CONSUMER_SECRET')
 			ACCESS_TOKEN = config.get('Twitter OAuth', 'ACCESS_TOKEN')
-			ACCESS_TOKEN_SECRET = config.get('Twitter OAuth', 'ACCESS_TOKEN_SECRET') 
-			
+			ACCESS_TOKEN_SECRET = config.get('Twitter OAuth', 'ACCESS_TOKEN_SECRET')
+
 			# User authentication
 			auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 			auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
-		
+
 			# Tweepy (a Python library for accessing the Twitter API)
 			self.api = tweepy.API(auth)
 
@@ -113,7 +106,6 @@ class Configuration():
 
 			# Twitter API
 			self.client = oauth.Client(consumer, access_token)
-
 
 		except Exception, e:
 			show_error(e)
@@ -124,28 +116,36 @@ class Configuration():
 class User:
 	"""Information about a Twitter user"""
 
-	screen_name = ""
-	name = ""
-	id = ""
-	created_at = ""
-	followers_count = ""
-	statuses_count = ""
-	location = ""
-	geo_enabled = ""
-	description = ""
-	expanded_description = ""
-	url = ""
-	expanded_url = ""
-	profile_image_url = ""
-	profile_banner_url = ""
-	tweets_average = ""
-	likes_average = ""
-	meta = ""
-	protected = ""
-	
+	# ----------------------------------------------------------------------
+	def __init__(self):
+		try:
+
+			self.screen_name = ""
+			self.name = ""
+			self.id = ""
+			self.created_at = ""
+			self.followers_count = ""
+			self.statuses_count = ""
+			self.location = ""
+			self.geo_enabled = ""
+			self.description = ""
+			self.expanded_description = ""
+			self.url = ""
+			self.expanded_url = ""
+			self.profile_image_url = ""
+			self.profile_banner_url = ""
+			self.tweets_average = ""
+			self.likes_average = ""
+			self.meta = ""
+			self.protected = ""
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
 	# ----------------------------------------------------------------------
 	def set_user_information(self, api):
 		try:
+
 			self.screen_name = api.screen_name
 			self.name = api.name
 			self.id = api.id
@@ -161,14 +161,14 @@ class User:
 
 			td = datetime.datetime.today() - self.created_at
 			if td.days > 0:
-				self.tweets_average = round(float(self.statuses_count / (td.days * 1.0)),2) 
-				self.likes_average = round(float(api.favourites_count / (td.days * 1.0)),2) 
+				self.tweets_average = round(float(self.statuses_count / (td.days * 1.0)),2)
+				self.likes_average = round(float(api.favourites_count / (td.days * 1.0)),2)
 			else:
 				self.tweets_average = self.statuses_count
 				self.likes_average = self.favourites_count
 
 			self.url = api.url
-			 
+
 			if len(api.entities) > 1:
 				if api.entities['url']['urls']:
 					self.expanded_url = api.entities['url']['urls'][0]['expanded_url']
@@ -176,9 +176,9 @@ class User:
 					self.expanded_url = ""
 			else:
 				self.expanded_url = ""
-				
+
 			try:
-				self.description = api.description 
+				self.description = api.description
 				if api.entities['description']['urls']:
 					tmp_expanded_description = api.description
 					url = api.entities['description']['urls'][0]['url']
@@ -187,10 +187,10 @@ class User:
 				else:
 					self.expanded_description= ""
 			except:
-				self.expanded_description= ""		
-			
+				self.expanded_description= ""
+
 			self.profile_image_url = str(api.profile_image_url).replace("_normal","")
-			
+
 			try:
 				if api.profile_banner_url:
 					self.profile_banner_url = str(api.profile_banner_url).replace("_normal","")
@@ -198,37 +198,44 @@ class User:
 					self.profile_banner_url = ""
 			except:
 				self.profile_banner_url = ""
-			
+
 			self.verified = str(api.verified)
 			self.listed_count = str(api.listed_count)
 			self.lang = str(api.lang)
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Sources:
-	"""Get tools used to publish tweets"""
+	"""Get apps used to publish tweets"""
 
-	# source = [source1, source2, ... ]
-	# sources_firstdate = {source1: first_date1, source2: first_date2, ... ]
-	# sources_lastdate = {source1: last_date1, source2: last_date2, ... ]
-	# sources_count = {source1: tweets_number1, source2: tweets_number2, ... ]
-	# sources_lasttweet = {source1: tweet_id1, source2: tweet_id2, ...}
-	sources = []
-	sources_firstdate = {}
-	sources_lastdate = {}
-	sources_count = {}
-	sources_total_count = 0
-	sources_percent = {}
-	sources_firsttweet = {}
-	sources_lasttweet = {}
-	
+	# ----------------------------------------------------------------------
+	def __init__(self):
+		try:
+
+			# source = [source1, source2, ... ]
+			# sources_firstdate = {source1: first_date1, source2: first_date2, ... ]
+			# sources_lastdate = {source1: last_date1, source2: last_date2, ... ]
+			# sources_count = {source1: tweets_number1, source2: tweets_number2, ... ]
+			# sources_lasttweet = {source1: tweet_id1, source2: tweet_id2, ...}
+			self.sources = []
+			self.sources_firstdate = {}
+			self.sources_lastdate = {}
+			self.sources_count = {}
+			self.sources_total_count = 0
+			self.sources_percent = {}
+			self.sources_firsttweet = {}
+			self.sources_lasttweet = {}
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
 	# ----------------------------------------------------------------------
 	def set_sources_information(self, tweet):
 		try:
+
 			add = 1
 			for index, item in enumerate(self.sources):
 				if tweet.source == item[0]:
@@ -240,7 +247,7 @@ class Sources:
 					if tweet.created_at > self.sources_lastdate[tweet.source]:
 						self.sources_lastdate[tweet.source] = tweet.created_at
 					self.sources_firsttweet[tweet.source] = tweet.id
-			
+
 			if add:
 				self.sources.append([tweet.source])
 				self.sources_count[tweet.source] = 1
@@ -250,25 +257,23 @@ class Sources:
 				self.sources_lasttweet[tweet.source] = tweet.id
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def set_global_information(self):
 		try:
 
 			for s in self.sources:
-				self.sources_percent[s[0]] = round((self.sources_count[s[0]] * 100.0) / self.sources_total_count, 1) 
+				self.sources_percent[s[0]] = round((self.sources_count[s[0]] * 100.0) / self.sources_total_count, 1)
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Lists:
 	"""Get info about the lists the authenticated user has been added to or is owner"""
-	
+
 	# ----------------------------------------------------------------------
 	def get_memberships(self, client, listed_count, screen_name):
 		try:
@@ -305,46 +310,50 @@ class Lists:
 					if response['status'] != "404":
 						response_dictionary = json.loads(data)
 						if "Rate limit exceeded" in str(response_dictionary):
-							print "\n\t\tWaiting..."
+							show_ui_message("Waiting...", "INFO", br=1)
 							time.sleep(60)
 							continue
 						else:
 							for public_list in response_dictionary['lists']:
-								public_lists += 1
-								sys.stdout.write("\r\t\t" + str(public_lists) + " public lists analyzed")
-								sys.stdout.flush()
+								if public_lists < int(str(ui.tb_lists_number.text())):
+									public_lists += 1
+									show_ui_message(str(public_lists) + " public lists analyzed", "INFO", br=0)
 
-								csvWriter.writerow([public_lists, public_list['id_str'], public_list['name'], public_list['description'], public_list['member_count'], public_list['subscriber_count'], public_list['uri'], public_list['user']['screen_name'], public_list['user']['created_at'], public_list['user']['name'], public_list['user']['description'], public_list['user']['followers_count'], public_list['user']['friends_count']])
-								csvFile.flush()
+									cursor = ui.tb_messages.textCursor()
+									cursor.movePosition(QtGui.QTextCursor.StartOfLine, 0)
+									cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
+									cursor.removeSelectedText()
 
-							cursor = response_dictionary['next_cursor']
+									csvWriter.writerow([public_lists, public_list['id_str'], public_list['name'], public_list['description'], public_list['member_count'], public_list['subscriber_count'], public_list['uri'], public_list['user']['screen_name'], public_list['user']['created_at'], public_list['user']['name'], public_list['user']['description'], public_list['user']['followers_count'], public_list['user']['friends_count']])
+									csvFile.flush()
+								else:
+									cursor = 0
+									break
+
+							if cursor != 0:
+								cursor = response_dictionary['next_cursor']
 					else:
 						cursor = 0
 				except Exception, e:
 					rate_limit = show_error(e)
 					if rate_limit:
-						print "\t\tWaiting..."
+						show_ui_message("Waiting...", "INFO", br=1)
 						time.sleep(60)
 						continue
 
-
 			private_lists = listed_count - public_lists
-
-			print "\n\t\tThe user has been added to " + str(listed_count) + " lists (private: " + str(private_lists) + ", public: " + str(public_lists) + ")" 
-
-			print "\t\tOutput file: " + username_directory + "/" + memberships_file + "\n"
+			show_ui_message("The user has been added to " + str(listed_count) + " lists (private: " + str(private_lists) + ", public: " + str(public_lists) + ")", "INFO", br=1)
+			show_ui_message("Output file: " + username_directory + "/" + memberships_file, "INFO", br=1)
 
 			csvFile.close()
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def get_ownerships(self, client, screen_name):
 		try:
-						
+
 			ownerships_file = screen_name + "_ownerships.txt"
 
 			username_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + screen_name
@@ -377,11 +386,10 @@ class Lists:
 					if response['status'] != "404":
 						response_dictionary = json.loads(data)
 						if "Rate limit exceeded" in str(response_dictionary):
-							print "\n\t\tWaiting..."
+							show_ui_message("Waiting...", "INFO", br=1)
 							time.sleep(60)
 							continue
 						else:
-
 							for owner_list in response_dictionary['lists']:
 								owner_lists += 1
 
@@ -394,25 +402,22 @@ class Lists:
 				except Exception, e:
 					rate_limit = show_error(e)
 					if rate_limit:
-						print "\t\tWaiting..."
+						show_ui_message("Waiting...", "INFO", br=1)
 						time.sleep(60)
 						continue
 
-			print "\t\t" + str(owner_lists) + " public lists owned by the user" 
-
-			print "\t\tOutput file: " + username_directory + "/" + ownerships_file + "\n"
+			show_ui_message(str(owner_lists) + " public lists owned by the user", "INFO", br=1)
+			show_ui_message("Output file: " + username_directory + "/" + ownerships_file, "INFO", br=1)
 
 			csvFile.close()
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def get_lists(self, client, screen_name):
 		try:
-						
+
 			lists_file = screen_name + "_lists.txt"
 
 			username_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + screen_name
@@ -442,14 +447,11 @@ class Lists:
 			response, data = client.request(url_with_cursor)
 
 			if response['status'] != "404":
-
 				rate_limit = 0
-
 				while not rate_limit:
 					response_dictionary = json.loads(data)
-
 					if "Rate limit exceeded" in str(response_dictionary):
-						print "\n\t\tWaiting..."
+						show_ui_message("Waiting...", "INFO", br=1)
 						time.sleep(60)
 					else:
 						rate_limit = 1
@@ -459,34 +461,30 @@ class Lists:
 						user_lists += 1
 						csvWriter.writerow([user_lists, user_list['id_str'], user_list['name'], user_list['description'], user_list['member_count'], user_list['subscriber_count'], user_list['uri'], user_list['user']['screen_name'], user_list['user']['created_at'], user_list['user']['name'], user_list['user']['description'], user_list['user']['followers_count'], user_list['user']['friends_count']])
 						csvFile.flush()
-
 					except Exception, e:
 						rate_limit = show_error(e)
 						if rate_limit:
-							print "\t\tWaiting..."
+							show_ui_message("Waiting...", "INFO", br=1)
 							time.sleep(60)
 							continue
 
-			print "\t\tUser subscribed to " + str(user_lists) + " lists"
-
-			print "\t\tOutput file: " + username_directory + "/" + lists_file + "\n"
+			show_ui_message("User subscribed to " + str(user_lists) + " lists", "INFO", br=1)
+			show_ui_message("Output file: " + username_directory + "/" + lists_file, "INFO", br=1)
 
 			csvFile.close()
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Collections:
 	"""Get info about the colletions created by the specified user"""
-	
+
 	# ----------------------------------------------------------------------
 	def get_collections(self, client, screen_name):
 		try:
-						
+
 			collections_file = screen_name + "_collections.txt"
 
 			username_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + screen_name
@@ -518,7 +516,7 @@ class Collections:
 					response, data = client.request(url_with_cursor)
 					response_dictionary = json.loads(data)
 					if "Rate limit exceeded" in str(response_dictionary):
-						print "\n\t\tWaiting..."
+						show_ui_message("Waiting...", "INFO", br=1)
 						time.sleep(60)
 						continue
 					else:
@@ -534,7 +532,7 @@ class Collections:
 
 								csvWriter.writerow([collections, timeline, name, description, url])
 								csvFile.flush()
-								
+
 						if len(response_dictionary['objects']) > 0:
 							cursor = response_dictionary['response']['cursors']['next_cursor']
 						else:
@@ -543,67 +541,73 @@ class Collections:
 				except Exception, e:
 					rate_limit = show_error(e)
 					if rate_limit:
-						print "\t\tWaiting..."
+						show_ui_message("Waiting...", "INFO", br=1)
 						time.sleep(60)
 						continue
 
-			print "\t\t" + str(collections) + " public collections owned by the user" 
-
-			print "\t\tOutput file: " + username_directory + "/" + collections_file 
+			show_ui_message(str(collections) + " public collections owned by the user", "INFO", br=1)
+			show_ui_message("Output file: " + username_directory + "/" + collections_file, "INFO", br=1)
 
 			csvFile.close()
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Activity:
 	"""Get statistics about the timeline activity"""
-	activity_count = 0
-	activity_tweet = 0
-	activity_retweet = 0
-	activity_reply = 0
-	activity_url = 0
-	activity_media = 0
-	activity_tweet_percent = 0
-	activity_retweet_percent = 0
-	activity_reply_percent = 0
-	activity_url_percent = 0
-	activity_media_percent = 0
-	activity_hours = {}
-	activity_hours ["00"] = 0
-	activity_hours ["01"] = 0
-	activity_hours ["02"] = 0
-	activity_hours ["03"] = 0
-	activity_hours ["04"] = 0
-	activity_hours ["05"] = 0
-	activity_hours ["06"] = 0
-	activity_hours ["07"] = 0
-	activity_hours ["08"] = 0
-	activity_hours ["09"] = 0
-	activity_hours ["10"] = 0
-	activity_hours ["11"] = 0
-	activity_hours ["12"] = 0
-	activity_hours ["13"] = 0
-	activity_hours ["14"] = 0
-	activity_hours ["15"] = 0
-	activity_hours ["16"] = 0
-	activity_hours ["17"] = 0
-	activity_hours ["18"] = 0
-	activity_hours ["19"] = 0
-	activity_hours ["20"] = 0
-	activity_hours ["21"] = 0
-	activity_hours ["22"] = 0
-	activity_hours ["23"] = 0
 
+	# ----------------------------------------------------------------------
+	def __init__(self):
+		try:
 
-	
+			self.activity_count = 0
+			self.activity_tweet = 0
+			self.activity_tweet_retweets = 0
+			self.activity_tweet_likes = 0
+			self.activity_retweet = 0
+			self.activity_reply = 0
+			self.activity_url = 0
+			self.activity_expanded_url = []
+			self.activity_media = 0
+			self.activity_tweet_percent = 0
+			self.activity_retweet_percent = 0
+			self.activity_reply_percent = 0
+			self.activity_url_percent = 0
+			self.activity_media_percent = 0
+			self.activity_hours = {}
+			self.activity_hours["00"] = 0
+			self.activity_hours["01"] = 0
+			self.activity_hours["02"] = 0
+			self.activity_hours["03"] = 0
+			self.activity_hours["04"] = 0
+			self.activity_hours["05"] = 0
+			self.activity_hours["06"] = 0
+			self.activity_hours["07"] = 0
+			self.activity_hours["08"] = 0
+			self.activity_hours["09"] = 0
+			self.activity_hours["10"] = 0
+			self.activity_hours["11"] = 0
+			self.activity_hours["12"] = 0
+			self.activity_hours["13"] = 0
+			self.activity_hours["14"] = 0
+			self.activity_hours["15"] = 0
+			self.activity_hours["16"] = 0
+			self.activity_hours["17"] = 0
+			self.activity_hours["18"] = 0
+			self.activity_hours["19"] = 0
+			self.activity_hours["20"] = 0
+			self.activity_hours["21"] = 0
+			self.activity_hours["22"] = 0
+			self.activity_hours["23"] = 0
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
 	# ----------------------------------------------------------------------
 	def set_activity(self, tweet):
 		try:
-			# Tweet, RT, Reply, Link, Media, Hours
 
 			self.activity_count += 1
 
@@ -611,42 +615,46 @@ class Activity:
 				self.activity_retweet += 1
 			else:
 				self.activity_tweet += 1
-			
+				self.activity_tweet_retweets += tweet.retweet_count
+				self.activity_tweet_likes += tweet.favorite_count
+
 			if hasattr(tweet, 'in_reply_to_screen_name'):
 				self.activity_reply += 1
-			
+
 			if tweet.entities['urls']:
 				medias = tweet.entities['urls']
 				for m in medias:
-					url = m['expanded_url']	
-					if "instagram" in url:
-						self.activity_media += 1
-					else:
-						self.activity_url += 1
-
+					try:
+						url = m['expanded_url']
+						if url:
+							expanded_url = urllib2.urlopen(url)
+							if "https://twitter.com/i/web/status/" not in expanded_url.url:
+								self.activity_expanded_url.append(expanded_url.url)
+							if "instagram" in url:
+								self.activity_media += 1
+							else:
+								self.activity_url += 1
+					except Exception as e:
+						pass
 			if tweet.entities.has_key('media') :
 				self.activity_media += 1
 
 			self.activity_hours[str(tweet.created_at.time().strftime('%H'))] += 1
-					
 
-		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
+		except Exception as e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def set_global_information(self):
 		try:
-			
-			self.activity_tweet_percent = round((self.activity_tweet * 100.0) / self.activity_count, 1) 
-			self.activity_retweet_percent = round((self.activity_retweet * 100.0) / self.activity_count, 1) 
-			self.activity_url_percent = round((self.activity_url * 100.0) / self.activity_count, 1) 
-			self.activity_media_percent = round((self.activity_media * 100.0) / self.activity_count, 1) 
+
+			self.activity_tweet_percent = round((self.activity_tweet * 100.0) / self.activity_count, 1)
+			self.activity_retweet_percent = round((self.activity_retweet * 100.0) / self.activity_count, 1)
+			self.activity_url_percent = round((self.activity_url * 100.0) / self.activity_count, 1)
+			self.activity_media_percent = round((self.activity_media * 100.0) / self.activity_count, 1)
 
 		except Exception, e:
-			pass
-
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
@@ -691,18 +699,23 @@ class Followers:
 						analyzed_user += 1
 						csvWriter.writerow([analyzed_user, user.id, user.name.encode('utf-8'), user.screen_name, user.description.encode('utf-8'), user.profile_image_url, user.profile_background_image_url, user.created_at, user.location, user.time_zone, user.geo_enabled, user.followers_count, user.friends_count, user.statuses_count, user.listed_count, user.favourites_count, user.verified, user.lang])
 						csvFile.flush()
-						sys.stdout.write("\r\t\t" + str(analyzed_user) +"/" + str(limit) + " users analyzed")
-						sys.stdout.flush()
+
+						show_ui_message(str(analyzed_user) +"/" + str(limit) + " users analyzed", "INFO", br=0)
+
+						cursor = ui.tb_messages.textCursor()
+						cursor.movePosition(QtGui.QTextCursor.StartOfLine, 0)
+						cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
+						cursor.removeSelectedText()
 
 						try:
 							img = urllib2.urlopen(user.profile_image_url.replace("_normal.", ".")).read()
-							filename = str(user.id) + ".jpg" 
+							filename = str(user.id) + ".jpg"
 							image = pics_directory + "/" +filename
 							if not os.path.exists(image):
 								f = open(image, 'wb')
 								f.write(img)
 								f.close()
-										
+
 						except Exception, e:
 							pass
 					else:
@@ -711,24 +724,22 @@ class Followers:
 				except Exception, e:
 					rate_limit = show_error(e)
 					if rate_limit:
-						print "\t\tWaiting..."
+						show_ui_message("Waiting...", "INFO", br=1)
 						time.sleep(60)
 						continue
 
-
-			print "\n\n\t\tOutput file: " + pics_directory + "/" + followers_file 
+			show_ui_message("Output file: " + pics_directory + "/" + followers_file, "INFO", br=1)
 
 			csvFile.close()
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Friends:
 	"""Get friends for the specified user"""
-	
+
 	# ----------------------------------------------------------------------
 	def get_friends(self, username, api, limit):
 		try:
@@ -757,25 +768,22 @@ class Friends:
 			csvWriter.writerow(["#", "ID", "USERNAME", "SCREEN NAME", "DESCRIPTION", "PROFILE IMAGE URL", "PROFILE BANNER URL", "CREATED AT", "LOCATION", "TIME_ZONE", "GEO ENABLED", "FOLLOWERS COUNT", "FRIENDS COUNT", "STATUSES COUNT", "LISTED COUNT", "FAVOURITES COUNT", "USER VERIFIED", "USER LANG"])
 
 			analyzed_user = 0
-			for userid in tweepy.Cursor(api.friends_ids, screen_name=username).items():				
+			for userid in tweepy.Cursor(api.friends_ids, screen_name=username).items():
 				try:
 					if int(analyzed_user) < int(limit):
 						user = api.get_user(userid)
 						analyzed_user += 1
 						csvWriter.writerow([analyzed_user, user.id, user.name.encode('utf-8'), user.screen_name, user.description.encode('utf-8'), user.profile_image_url, user.profile_background_image_url, user.created_at, user.location, user.time_zone, user.geo_enabled, user.followers_count, user.friends_count, user.statuses_count, user.listed_count, user.favourites_count, user.verified, user.lang])
 						csvFile.flush()
-						sys.stdout.write("\r\t\t" + str(analyzed_user) +"/" + str(limit) + " users analyzed")
-						sys.stdout.flush()
 
 						try:
 							img = urllib2.urlopen(user.profile_image_url.replace("_normal.", ".")).read()
-							filename = str(user.id) + ".jpg" 
+							filename = str(user.id) + ".jpg"
 							image = pics_directory + "/" +filename
 							if not os.path.exists(image):
 								f = open(image, 'wb')
 								f.write(img)
 								f.close()
-										
 						except Exception, e:
 							pass
 					else:
@@ -784,28 +792,25 @@ class Friends:
 				except Exception, e:
 					rate_limit = show_error(e)
 					if rate_limit:
-						print "\t\tWaiting..."
+						show_ui_message("Waiting...", "INFO", br=1)
 						time.sleep(60)
 						continue
 
-			print "\n\n\t\tOutput file: " + pics_directory + "/" + friends_file 
+			show_ui_message("Output file: " + pics_directory + "/" + friends_file, "INFO", br=1)
 
 			csvFile.close()
 
-
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Social_Networks:
 	"""Identify social networks identities for a user"""
-	
+
 	#: social networks used by a Twitter user:
-	#: {'twitteruser': [[Instagram_user, Instagram_profile], 
-	#:					[Foursquare_user, Foursquare_profile], 
+	#: {'twitteruser': [[Instagram_user, Instagram_profile],
+	#:					[Foursquare_user, Foursquare_profile],
 	#:					[Facebook_user, Facebook_profile],
 	#:					[LinkedIn_user, LinkedIn_profile],
 	#:					[Runkeeper_user, Runkeeper_profile],
@@ -816,20 +821,29 @@ class Social_Networks:
 	#:					[Youtube_user, Youtube_profile],
 	#:					[Google+_user, Google+_profile],
 	#:					[Frontback_user, Frontback_profile]
-	#:					]} 
-	user_sn = {}
-	see_again = 1
+	#:					]}
+
+	# ----------------------------------------------------------------------
+	def __init__(self):
+		try:
+
+			self.user_sn = {}
+			self.see_again = 1
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def get_socialnetwork_userinfo(self, status, socialnetwork):
 		try:
+
 			#: username used in the social network
-			username = "Unknown"
+			username = ""
 			#: link to the user profile in the social network
 			link = ""
 			#: user picture in the social network
-			pic = "" 
-			#: real user name 
+			pic = "?"
+			#: real user name
 			name = ""
 			#: additional info
 			info = ""
@@ -838,31 +852,30 @@ class Social_Networks:
 
 			medias = status.entities['urls']
 			for m in medias:
-				url = m['expanded_url']	
-
+				url = m['expanded_url']
 				try:
-					response = urllib2.urlopen(url)  
+					response = urllib2.urlopen(url)
 					html = response.read()
-				except Exception as e:	
+				except Exception as e:
 					pass
 				if socialnetwork.lower().find("instagram") >= 0:
 					#: Instagram
 					#: ----------------------------------------------
-					urls = re.search('"viewer_has_saved_to_collection": (.*) "profile_pic_url": "(.*)", "username": "(.*)", "blocked_by_viewer"', html)
-				
+					urls = re.search('"viewer_has_saved_to_collection":(.*)"profile_pic_url":"(.*)","username":"(.*)","blocked_by_viewer"', html)
+
 					if urls:
 						username = urls.group(3)
 						pic = urls.group(2)
 
-					urls = re.search('<meta property="og:title" content="Instagram (photo|post) by (.*) •', html)
+					urls = re.search('<meta property="og:title" content="(.*) on Instagram:(.*)', html)
 
 					if urls:
-						name = urls.group(2)
-					
-					if username:					
+						name = urls.group(1)
+
+					if username:
 						link = "https://instagram.com/" + username
 						# Stop after the first result
-						break	
+						break
 				else:
 					if socialnetwork.lower().find("foursquare") >= 0:
 						#: Foursquare
@@ -870,7 +883,7 @@ class Social_Networks:
 						urls = re.search('https://www.swarmapp.com/(.*)/checkin/', html)
 						if urls:
 							username = urls.group(1)
-							link = "https://foursquare.com/" + username 
+							link = "https://foursquare.com/" + username
 						else:
 							urls = re.search('canonicalPath":"..(\w*)","canonicalUrl"', html)
 							if urls:
@@ -884,37 +897,37 @@ class Social_Networks:
 						if tmp:
 							pic = tmp.group(1).decode('unicode-escape')
 
-						if username:					
+						if username:
 							# Stop after the first result
-							break	
+							break
 					else:
 						if socialnetwork.lower().find("facebook") >= 0:
-							#: Facebook	
+							#: Facebook
 							#: ----------------------------------------------
 							if status.source.lower().find("facebook") >= 0:
 							# Identify Faceboook acount from Facebook page
 								if not html:
 									# Identify Faceboook acount from 404 not found facebook page
 									try:
-										response = urllib2.urlopen(url) 
+										response = urllib2.urlopen(url)
 										html = response.read()
-									except Exception as e:	
+									except Exception as e:
 										pass
 									urls = re.search(';id=(.*)">', html)
 									if urls:
 										try:
-											response = urllib2.urlopen("https://facebook.com/profile.php?id=" + urls.group(1)) 
+											response = urllib2.urlopen("https://facebook.com/profile.php?id=" + urls.group(1))
 											html = response.read()
-										except Exception as e:	
+										except Exception as e:
 											pass
 										urls = re.search('0; URL=/(.*)\/\?_fb_noscript=1', html)
 										if urls:
-											username = urls.group(1)									
+											username = urls.group(1)
 											link = "https://facebook.com/" + username
 											try:
-												response = urllib2.urlopen(link)  
+												response = urllib2.urlopen(link)
 												html = response.read()
-											except Exception as e:	
+											except Exception as e:
 												pass
 											tmp = re.search('<img class="profilePic img" alt="(.*)" src="(.*)" /></a></div></div><div class="_58gk">', html)
 											if tmp:
@@ -930,7 +943,7 @@ class Social_Networks:
 											link = "https://facebook.com/" + username
 									else:
 										try:
-											response = urllib2.urlopen("http://longurl.org/expand?url="+url) 
+											response = urllib2.urlopen("http://longurl.org/expand?url="+url)
 											html2 = response.read()
 											urls = re.search('<a href="https://www.facebook.com/(.*)/posts/[0-9]*">https://', html2)
 										except Exception as e:
@@ -939,9 +952,9 @@ class Social_Networks:
 											username = urls.group(1)
 											link = "https://facebook.com/" + username
 											try:
-												response = urllib2.urlopen(link)  
+												response = urllib2.urlopen(link)
 												html = response.read()
-											except Exception as e:	
+											except Exception as e:
 												pass
 											tmp = re.search('<img class="profilePic img" alt="(.*)" src="(.*)" /></a></div></div><div class="_58gk">', html)
 											if tmp:
@@ -958,7 +971,7 @@ class Social_Networks:
 									self.see_again = 0
 									username = ""
 									try:
-										response = urllib2.urlopen("https://foursquare.com/"+self.user_sn[status.user.screen_name][1][0])  
+										response = urllib2.urlopen("https://foursquare.com/"+self.user_sn[status.user.screen_name][1][0])
 										html = response.read()
 									except Exception as e:
 										pass
@@ -967,9 +980,9 @@ class Social_Networks:
 										username = urls.group(1)
 										link = "http://www.facebook.com/profile.php?id=" + username
 										try:
-											response = urllib2.urlopen(link)  
+											response = urllib2.urlopen(link)
 											html = response.read()
-										except Exception as e:	
+										except Exception as e:
 											pass
 										tmp = re.search('<img class="profilePic img" alt="(.*)" src="(.*)" /></div></div><meta itemprop="image"', html)
 										if tmp:
@@ -982,9 +995,9 @@ class Social_Networks:
 										if tmp:
 											name = tmp.group(1)
 										try:
-											response = urllib2.urlopen(link)  
+											response = urllib2.urlopen(link)
 											html = response.read()
-										except Exception as e:	
+										except Exception as e:
 											pass
 										tmp = re.search('<img class="profilePic img" alt="(.*)" src="(.*)" /></a></div></div><div class="_58gk">', html)
 										if tmp:
@@ -992,19 +1005,18 @@ class Social_Networks:
 										tmp = re.search('<span itemprop="name">(.*)</span><span class="_5rqt">', html)
 										if tmp:
 											info = tmp.group(1).decode('utf-8')
-							if username:					
+							if username:
 								# Stop after the first result
-								break				
+								break
 						else:
 							if socialnetwork.lower().find("linkedin") >= 0:
 								#: LinkedIn
 								#: ----------------------------------------------
-								
 								if not html:
 									try:
 										req = urllib2.Request(url, headers={ 'User-Agent': 'Mozilla/5.0' })
 										html = urllib2.urlopen(req).read()
-										
+
 										tmp = re.search('linkedin.com/in/(.*)"/><link rel="stylesheet"', html)
 										if tmp:
 											username = tmp.group(1).decode('utf-8')
@@ -1018,25 +1030,25 @@ class Social_Networks:
 										if tmp:
 											name = tmp.group(1).decode('utf-8')
 
-									except Exception as e:	
+									except Exception as e:
 										pass
 
-								if username:					
+								if username:
 									# Stop after the first result
-									break	
+									break
 
 							else:
 								if socialnetwork.lower().find("runkeeper") >= 0:
-									# Runkeeper 
+									# Runkeeper
 									#: ----------------------------------------------
 									urls = re.search('"https://runkeeper.com/user/(.*)/activity/', html)
 									if urls:
 										username = urls.group(1)
 										link = "https://runkeeper.com/user/" + username
 										try:
-											response = urllib2.urlopen(link)  
+											response = urllib2.urlopen(link)
 											html = response.read()
-										except Exception as e:	
+										except Exception as e:
 											pass
 										tmp = re.search('https://graph.facebook.com(.*)" title', html)
 										if tmp:
@@ -1047,9 +1059,9 @@ class Social_Networks:
 										tmp = re.search('<meta name="description" content="(.*)"/>', html)
 										if tmp:
 											info = tmp.group(1)[tmp.group(1).find("joined"):].decode('utf-8')
-									if username:					
+									if username:
 										# Stop after the first result
-										break				
+										break
 								else:
 									if socialnetwork.lower().find("flickr") >= 0:
 										# Flickr
@@ -1071,10 +1083,10 @@ class Social_Networks:
 												html = html[tmp+5:]
 											tmp = re.search('"name": "(.*)",', html)
 											if tmp:
-												name = tmp.group(1).decode('utf-8') 									
-										if username:					
+												name = tmp.group(1).decode('utf-8')
+										if username:
 											# Stop after the first result
-											break				
+											break
 									else:
 										if socialnetwork.lower().find("vine") >= 0:
 											# Vine
@@ -1085,12 +1097,12 @@ class Social_Networks:
 											urls = re.search('"url": "https://vine.co/u/(.*)"', html)
 											if urls:
 													link = "https://vine.co/u/" + urls.group(1)
-											if username:					
+											if username:
 												# Stop after the first result
-												break	
+												break
 										else:
 											if socialnetwork.lower().find("periscope") >= 0:
-												# Periscope 
+												# Periscope
 												#: ----------------------------------------------
 												urls = re.search('pscp://user/(.*)&quot;,&quot;inAppUrl', html)
 												if urls:
@@ -1101,19 +1113,19 @@ class Social_Networks:
 												if tmp:
 														pic = tmp.group(1)
 
-												if username:					
+												if username:
 													# Stop after the first result
-													break	
+													break
 											else:
 												if socialnetwork.lower().find("kindle") >= 0:
-													# Kindle 
+													# Kindle
 													#: ----------------------------------------------
 													urls = re.search('customerId":"(.*)","howLongAgo', html)
 													if urls:
-														tmp = urls.group(1)	
+														tmp = urls.group(1)
 														try:
 															url = "https://kindle.amazon.com/profile/redirect/" + tmp
-															response = urllib2.urlopen(str(url)) 
+															response = urllib2.urlopen(str(url))
 															html = response.read()
 														except Exception as e:
 															pass
@@ -1124,7 +1136,7 @@ class Social_Networks:
 																username = tmp.group(1)
 																link = "https://kindle.amazon.com/profile/" + urls.group(1)
 																try:
-																	response = urllib2.urlopen(link) 
+																	response = urllib2.urlopen(link)
 																	html = response.read()
 																except Exception as e:
 																	pass
@@ -1138,19 +1150,19 @@ class Social_Networks:
 																tmp = re.search('<span id="numFollowing(.*)">(.*)</span></a>', html)
 																if tmp:
 																	info += " Following: " + tmp.group(2)
-													if username:					
+													if username:
 														# Stop after the first result
-														break													
+														break
 												else:
 													if socialnetwork.lower().find("youtube") >= 0:
-														# Youtube 
+														# Youtube
 														#: ----------------------------------------------
 														urls = re.search('/channel/(.*)" class', html)
 														if urls:
-															tmp = urls.group(1)	
+															tmp = urls.group(1)
 															try:
 																url = "http://www.youtube.com/channel/" + tmp
-																response = urllib2.urlopen(str(url)) 
+																response = urllib2.urlopen(str(url))
 																html = response.read()
 															except Exception as e:
 																pass
@@ -1165,7 +1177,7 @@ class Social_Networks:
 																	link = "http://www.youtube.com/user/" + username
 															try:
 																url = "http://www.youtube.com/user/" + username
-																response = urllib2.urlopen(url) 
+																response = urllib2.urlopen(url)
 																html = response.read()
 															except Exception as e:
 																pass
@@ -1180,23 +1192,23 @@ class Social_Networks:
 															# Identify Youtube acount from Google+ page
 															urls = re.search('<link itemprop="url" href="http://www.youtube.com/user/(.*)">', html)
 															if urls:
-																username = urls.group(1)	
-																link = "http://www.youtube.com/user/" + username									
-														if username:					
+																username = urls.group(1)
+																link = "http://www.youtube.com/user/" + username
+														if username:
 															# Stop after the first result
-															break	
+															break
 													else:
 														if socialnetwork.lower().find("google") >= 0:
-															# Google+ 
+															# Google+
 															#: ----------------------------------------------
 															urls = re.search('"url" href="https://plus.google.com/(.*)">', html)
 															if urls:
 																tmp = urls.group(1)
 																username = tmp
-																link = "https://plus.google.com/" + username	
+																link = "https://plus.google.com/" + username
 																try:
 																	url = "https://plus.google.com/" + tmp
-																	response = urllib2.urlopen(url) 
+																	response = urllib2.urlopen(url)
 																	html = response.read()
 																except Exception as e:
 																	pass
@@ -1204,28 +1216,28 @@ class Social_Networks:
 																if urls:
 																	username = urls.group(1)
 																	link = "https://plus.google.com/" + username
-																tmp = re.search('<meta itemprop="image" content="(.*)"><meta itemprop="url"', html)											
+																tmp = re.search('<meta itemprop="image" content="(.*)"><meta itemprop="url"', html)
 																if tmp:
 																	pic = "https:" + tmp.group(1)
-																tmp = re.search('<meta property="og:title" content="(.*): Google\+"><meta name="twitter:title"', html)											
+																tmp = re.search('<meta property="og:title" content="(.*): Google\+"><meta name="twitter:title"', html)
 																if tmp:
 																	name = tmp.group(1).decode('utf-8')
 																tmp = re.search('<meta itemprop="description" content="(.*)"><meta itemprop="image" content="', html)
 																if tmp:
 																	info = tmp.group(1).decode('utf-8')
-															if username:					
+															if username:
 																# Stop after the first result
-																break	
+																break
 														else:
 															if socialnetwork.lower().find("frontback") >= 0:
-																# Frontback 
+																# Frontback
 																#: ----------------------------------------------
 																urls = re.search('<h1 class="post-info-username"><a class="no-ui" href="http://www.frontback.me/(.*)">(.*)</a></h1>', html)
 																if urls:
 																	username = urls.group(1)
 																	link = "http://www.frontback.me/" + username
 																try:
-																	response = urllib2.urlopen(link) 
+																	response = urllib2.urlopen(link)
 																	html = response.read()
 																except Exception as e:
 																	pass
@@ -1233,27 +1245,25 @@ class Social_Networks:
 																if tmp:
 																	pic = tmp.group(1)
 																	name = tmp.group(3)
-																	info = tmp.group(5)																	
+																	info = tmp.group(5)
+
 
 			return username, link, pic, name, info
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
-	# Other social networks
-	# WhoSay, Beme, http://get.shyp.com/rt/2hrm3z7, vimeo.com (la9deanon), fancy (aplusk)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def set_social_networks(self, status):
 		try:
+
 			# Twitter user
 			owner = status.user.screen_name
 			status.user.screen_name = status.user.screen_name.lower()
 			if not hasattr(status, 'retweeted_status'):
 				# The user is the original source of this tweet
-				if status.source.lower().find("instagram") >= 0 and (self.user_sn[status.user.screen_name][0][0] == "" or self.user_sn[status.user.screen_name][0][0] == "Unknown"): 
-					# Instagram user. 
+				if status.source.lower().find("instagram") >= 0 and (self.user_sn[status.user.screen_name][0][0] == "" or self.user_sn[status.user.screen_name][0][0] == "Unknown"):
+					# Instagram user.
 					username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "instagram")
 					self.user_sn[status.user.screen_name][0][0] = username
 					self.user_sn[status.user.screen_name][0][1] = link
@@ -1263,7 +1273,7 @@ class Social_Networks:
 				else:
 					if status.source.lower().find("foursquare") >= 0 and (self.user_sn[status.user.screen_name][1][0] == "" or self.user_sn[status.user.screen_name][1][0] == "Unknown"):
 						# Foursquare user
-						username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "foursquare")						
+						username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "foursquare")
 						self.user_sn[status.user.screen_name][1][0] = username
 						self.user_sn[status.user.screen_name][1][1] = link
 						self.user_sn[status.user.screen_name][1][2] = pic
@@ -1271,7 +1281,7 @@ class Social_Networks:
 						self.user_sn[status.user.screen_name][1][4] = info
 					if status.source.lower().find("facebook") >= 0  and (self.user_sn[status.user.screen_name][2][0] == "" or self.user_sn[status.user.screen_name][2][0] == "Unknown"):
 						# Facebook user
-						username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "facebook")							
+						username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "facebook")
 						self.user_sn[status.user.screen_name][2][0] = username
 						self.user_sn[status.user.screen_name][2][1] = link
 						self.user_sn[status.user.screen_name][2][2] = pic
@@ -1280,7 +1290,7 @@ class Social_Networks:
 					else:
 						if status.source.lower().find("linkedin") >= 0 and (self.user_sn[status.user.screen_name][3][0] == "" or self.user_sn[status.user.screen_name][3][0] == "Unknown"):
 							# LinkedIn user
-							username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "linkedin")					
+							username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "linkedin")
 							self.user_sn[status.user.screen_name][3][0] = username
 							self.user_sn[status.user.screen_name][3][1] = link
 							self.user_sn[status.user.screen_name][3][2] = pic
@@ -1289,7 +1299,7 @@ class Social_Networks:
 						else:
 							if status.source.lower().find("runkeeper") >= 0 and (self.user_sn[status.user.screen_name][4][0] == "" or self.user_sn[status.user.screen_name][4][0] == "Unknown"):
 								# Runkeeper user
-								username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "runkeeper")						
+								username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "runkeeper")
 								self.user_sn[status.user.screen_name][4][0] = username
 								self.user_sn[status.user.screen_name][4][1] = link
 								self.user_sn[status.user.screen_name][4][2] = pic
@@ -1316,7 +1326,7 @@ class Social_Networks:
 									else:
 										if status.source.lower().find("periscope") >= 0 and (self.user_sn[status.user.screen_name][7][0] == "" or self.user_sn[status.user.screen_name][7][0] == "Unknown"):
 											# Periscope user
-											username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "periscope")											
+											username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "periscope")
 											self.user_sn[status.user.screen_name][7][0] = username
 											self.user_sn[status.user.screen_name][7][1] = link
 											self.user_sn[status.user.screen_name][7][2] = pic
@@ -1334,18 +1344,18 @@ class Social_Networks:
 											else:
 												if status.source.lower().find("google") >= 0 and status.text.lower().find("a @youtube") >= 0 and (self.user_sn[status.user.screen_name][10][0] == "" or self.user_sn[status.user.screen_name][10][0] == "Unknown"):
 													# Google+ user
-													username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "google")							
+													username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "google")
 													self.user_sn[status.user.screen_name][10][0] = username
-													self.user_sn[status.user.screen_name][10][1] = link												
+													self.user_sn[status.user.screen_name][10][1] = link
 													self.user_sn[status.user.screen_name][10][2] = pic
 													self.user_sn[status.user.screen_name][10][3] = name
 													self.user_sn[status.user.screen_name][10][4] = info
-												
+
 												if ((status.source.lower().find("youtube") >= 0 and status.text.lower().find("a @youtube") >= 0) or (status.source.lower().find("google") >= 0 and status.text.lower().find("a @youtube") >= 0)) and (self.user_sn[status.user.screen_name][9][0] == "" or self.user_sn[status.user.screen_name][9][0] == "Unknown"):
 													# Youtube user
 													username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "youtube")
 													self.user_sn[status.user.screen_name][9][0] = username
-													self.user_sn[status.user.screen_name][9][1] = link												
+													self.user_sn[status.user.screen_name][9][1] = link
 													self.user_sn[status.user.screen_name][9][2] = pic
 													self.user_sn[status.user.screen_name][9][3] = name
 													self.user_sn[status.user.screen_name][9][4] = info
@@ -1354,57 +1364,61 @@ class Social_Networks:
 														# Frontback user
 														username, link, pic, name, info = self.get_socialnetwork_userinfo(status, "frontback")
 														self.user_sn[status.user.screen_name][11][0] = username
-														self.user_sn[status.user.screen_name][11][1] = link																							
+														self.user_sn[status.user.screen_name][11][1] = link
 														self.user_sn[status.user.screen_name][11][2] = pic
 														self.user_sn[status.user.screen_name][11][3] = name
 														self.user_sn[status.user.screen_name][11][4] = info
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Geolocation:
 	"""Get geolocation info included in tweets"""
 
-	toplocations = {}
-	toplocationsstartdate = {}
-	toplocatonsenddate = {}
-	geoimg = 0 # tweets with images and geolocation (parameter: -p 0)
-	toplocations = {} # store the user most visited locations 
-	toplocationsdatetime = {} # store date and time of the user most visited locations
-	toplocationsstartdate = {} # store initial date of the user most visited locations
-	toplocationsenddate = {} # store final date of the user most visited locations
-	toplocationsstarttime = {} # store initial time of the user most visited locations
-	toplocationsdays = {} # store week day of the user most visited locations
-	toplocationsendtime = {} # store final time of the user most visited locations
-	toplocationsdaysmo = {} # store week day of the user most visited locations
-	toplocationsdaystu = {} # store week day of the user most visited locations
-	toplocationsdayswe = {} # store week day of the user most visited locations
-	toplocationsdaysth = {} # store week day of the user most visited locations
-	toplocationsdaysfr = {} # store week day of the user most visited locations
-	toplocationsdayssa = {} # store week day of the user most visited locations
-	toplocationsdayssu = {} # store week day of the user most visited locations
-	geo_info = []
-	toplocations_tweets = {}
-	toplocations_tweets_route = {}
-		
-	visited_locations = []
-	visited_locations_startdate = []
-	visited_locations_enddate = []
-	visited_locations_starttime = []
-	visited_locations_endtime = []
-	visited_locations_days = []
-	
-	kml_info = []
-	media_info = {}
-	toploc = []
-	
+	# ----------------------------------------------------------------------
+	def __init__(self):
+		try:
+
+			self.toplocations = {}
+			self.toplocationsstartdate = {}
+			self.toplocatonsenddate = {}
+			self.geoimg = 0  # tweets with images and geolocation (parameter: -p 0)
+			self.toplocations = {}  # store the user most visited locations
+			self.toplocationsdatetime = {}  # store date and time of the user most visited locations
+			self.toplocationsstartdate = {}  # store initial date of the user most visited locations
+			self.toplocationsenddate = {}  # store final date of the user most visited locations
+			self.toplocationsstarttime = {}  # store initial time of the user most visited locations
+			self.toplocationsdays = {}  # store week day of the user most visited locations
+			self.toplocationsendtime = {}  # store final time of the user most visited locations
+			self.toplocationsdaysmo = {}  # store week day of the user most visited locations
+			self.toplocationsdaystu = {}  # store week day of the user most visited locations
+			self.toplocationsdayswe = {}  # store week day of the user most visited locations
+			self.toplocationsdaysth = {}  # store week day of the user most visited locations
+			self.toplocationsdaysfr = {}  # store week day of the user most visited locations
+			self.toplocationsdayssa = {}  # store week day of the user most visited locations
+			self.toplocationsdayssu = {}  # store week day of the user most visited locations
+			self.geo_info = []
+			self.toplocations_tweets = {}
+			self.toplocations_tweets_route = {}
+			self.visited_locations = []
+			self.visited_locations_startdate = []
+			self.visited_locations_enddate = []
+			self.visited_locations_starttime = []
+			self.visited_locations_endtime = []
+			self.visited_locations_days = []
+			self.kml_info = []
+			self.media_info = {}
+			self.toploc = []
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
 	# ----------------------------------------------------------------------
 	def set_geolocation_information(self, tweet):
 		try:
-			
+
 			add = 0
 			splace = ""
 			sgeo = ""
@@ -1419,13 +1433,13 @@ class Geolocation:
 			if tweet.geo:
 				reply = tweet.in_reply_to_screen_name
 				if reply:
-					in_reply_to_screen_name = reply	
+					in_reply_to_screen_name = reply
 
 				source_app = tweet.source
 				sgeo = tweet.geo['coordinates']
 				add = 1
 				lat = str(sgeo[0])[:str(sgeo[0]).find(".")+4]
-				lon = str(sgeo[1])[:str(sgeo[1]).find(".")+4]	
+				lon = str(sgeo[1])[:str(sgeo[1]).find(".")+4]
 				location_coord = "[" + lat + ", " + lon + "]"
 				for i in range (1, 20-len(location_coord)):
 					location_coord += " "
@@ -1434,17 +1448,17 @@ class Geolocation:
 				if location in self.toplocations.keys():
 					self.toplocations[location] += 1
 					if tweet.created_at < self.toplocationsstartdate[location]:
-						self.toplocationsstartdate[location] = tweet.created_at 
+						self.toplocationsstartdate[location] = tweet.created_at
 					if tweet.created_at > self.toplocationsenddate[location]:
 						self.toplocationsenddate[location] = tweet.created_at
 					if tweet.created_at.time() < self.toplocationsstarttime[location]:
-						self.toplocationsstarttime[location] = tweet.created_at.time() 
+						self.toplocationsstarttime[location] = tweet.created_at.time()
 					if tweet.created_at.time() > self.toplocationsendtime[location]:
-						self.toplocationsendtime[location] = tweet.created_at.time() 
+						self.toplocationsendtime[location] = tweet.created_at.time()
 				else:
 					self.toplocations[location] = 1
-					self.toplocationsstartdate[location] = tweet.created_at 
-					self.toplocationsenddate[location] = tweet.created_at 
+					self.toplocationsstartdate[location] = tweet.created_at
+					self.toplocationsenddate[location] = tweet.created_at
 					self.toplocationsstarttime[location] = tweet.created_at.time()
 					self.toplocationsendtime[location] = tweet.created_at.time()
 					self.toplocationsdaysmo[location] = 0
@@ -1467,15 +1481,15 @@ class Geolocation:
 				elif tweet.created_at.weekday() == 5: # Saturday
 						self.toplocationsdayssa[location] += 1
 				elif tweet.created_at.weekday() == 6: # Sunday
-						self.toplocationsdayssu[location] += 1					
-																												
+						self.toplocationsdayssu[location] += 1
+
 
 			place = splace.decode('utf-8')
 			if splace in self.toplocations_tweets:
-				self.toplocations_tweets[place] += 1	
+				self.toplocations_tweets[place] += 1
 			else:
 				self.toplocations_tweets[place] = 1
-			
+
 			sinfo = ""
 			media_url = ""
 			keywords_instagram = []
@@ -1491,7 +1505,7 @@ class Geolocation:
 					if media.find("instagram") > 0:
 						# Instagram
 						try:
-							response = urllib2.urlopen(str(media))  
+							response = urllib2.urlopen(str(media))
 							html = response.read()
 							media_url = get_url_media_from_instagram(html)
 							#tagged_users, owner = get_tagged_users_from_instagram(html)
@@ -1507,67 +1521,64 @@ class Geolocation:
 				place = splace.decode('utf-8')
 				sinfo = media_url + splace.decode('utf-8') + " " + str(sgeo).decode('utf-8')
 				self.geo_info.append([media_url, place, str(sgeo).decode('utf-8'), str(tweet.created_at.strftime('%m/%d/%Y')), str(tweet.created_at.time()), str(tweet.id), source_app])
-				
-				if len(self.visited_locations)>0 and place in self.visited_locations[len(self.visited_locations)-1][0]: 
-					self.visited_locations[len(self.visited_locations)-1][1] = tweet.created_at 
-					self.visited_locations[len(self.visited_locations)-1][2] = tweet.created_at.time() 
-					delta = self.visited_locations[len(self.visited_locations)-1][3] - tweet.created_at 
-					self.visited_locations[len(self.visited_locations)-1][5] = delta.days+1 
+
+				if len(self.visited_locations)>0 and place in self.visited_locations[len(self.visited_locations)-1][0]:
+					self.visited_locations[len(self.visited_locations)-1][1] = tweet.created_at
+					self.visited_locations[len(self.visited_locations)-1][2] = tweet.created_at.time()
+					delta = self.visited_locations[len(self.visited_locations)-1][3] - tweet.created_at
+					self.visited_locations[len(self.visited_locations)-1][5] = delta.days+1
 					self.visited_locations[len(self.visited_locations)-1][6] = self.toplocations_tweets[place]
-					
+
 				else:
-					# [place, date (since), time (since), date (until), time (until), days, tweets] 
+					# [place, date (since), time (since), date (until), time (until), days, tweets]
 					coord = lat + ", " + lon
 					self.visited_locations.append([place, tweet.created_at,  tweet.created_at.time(), tweet.created_at, tweet.created_at.time(), 1, 1, coord])
-					
-			else:
-				sinfo = ""		
-			
-		except Exception, e:
-			show_error(e)
-			sys.exit(1)
 
+			else:
+				sinfo = ""
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def set_geofile_information(self, tweet, user):
 		try:
+
 			tweet_geo = 0
 			place = ""
 			geo = ""
-			
+
 			# Get place from tweet
 			if tweet.place:
 				place = tweet.place.name.encode('utf-8')
-			
+
 			# Get coordinates from tweet
 			if tweet.geo:
 				geo = tweet.geo['coordinates']
 				tweet_geo = 1
-			
+
 			media_url = []
 			# Get media content from tweet
 			if tweet.entities.has_key('media') :
 				medias = tweet.entities['media']
 				for m in medias :
 					media_url.append(m['media_url'])
-						
+
 			photo = ""
 			if tweet_geo:
 				# Tweet with coordinates
 				content = "<table width=\"100%\"><tr><td width=\"48\"><img src=\""+user.profile_image_url.encode('utf-8') +"\"></td><td bgcolor=\"#cde4f3\"><b>" + user.name.encode('utf-8') + "</b> @" + user.screen_name.encode('utf-8') + "<br>" + tweet.text.encode('utf-8') + "</td></tr></table>"
-				
+
 				for media in media_url:
 					photo = " [Media] "
 					content += "<table width=\"100%\"><tr><td><img src=\"" + str(media) + "\"></td></tr></table>"
-								
+
 				date = tweet.created_at.strftime('%m/%d/%Y')
 				time = tweet.created_at.time()
 				self.kml_info.append([geo, content, photo, place, date, time])
-					
-		except Exception, e:
-			show_error(e)
-			sys.exit(1)
 
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def generates_geofile(self, geofile, parameters):
@@ -1579,20 +1590,21 @@ class Geolocation:
 		content = ""
 
 		try:
+
 			f = open(geofile, "w")
-			
+
 			header = "<table bgcolor=\"#000000\" width=\"100%\"><tr><td><font color=\"white\"><b>" + parameters.program_name + " " + parameters.program_version + "</b></font><td align=\"right\"><font color=\"white\">" + parameters.program_author_twitter + "</font></td></tr></table>"
-					
+
 			for info in self.kml_info:
 				#INFO: [coordinates, content, photo, place, date, time]
 				coord = str(info[0])
 				lat = coord[1:coord.find(",")]
 				lon = coord[coord.find(",")+2:coord.find("]")]
-				
+
 				cdata = ""
 				cdata = "\t\t<![CDATA[" + header + str(info[1]) + "]]>\n"
 				snippet = ""
-				
+
 				# Place + [Photo]
 				snippet = info[3] + " " + str(info[2])
 				kml_file_body += "\t<Placemark>\n"
@@ -1600,7 +1612,7 @@ class Geolocation:
 				# Date + Time
 				kml_file_body += "\t\t<name>" + str(info[4]) + " - " + str(info[5]) + "</name>\n"
 				kml_file_body += "\t\t<Snippet>" + snippet + "</Snippet>\n"
-				kml_file_body += "\t\t<description>\n" + cdata + "\t\t</description>\n"				
+				kml_file_body += "\t\t<description>\n" + cdata + "\t\t</description>\n"
 				kml_file_body += "\t\t<Point>\n"
 				kml_file_body += "\t\t\t<coordinates>" + lon + "," + lat + "</coordinates>\n"
 				kml_file_body += "\t\t</Point>\n"
@@ -1608,12 +1620,10 @@ class Geolocation:
 
 			kml_file_content = kml_file_header + kml_file_body + kml_file_foot
 			f.write(kml_file_content)
-			f.close()			
+			f.close()
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def set_global_information(self, top):
@@ -1627,9 +1637,9 @@ class Geolocation:
 				enddate = self.toplocationsenddate[place]
 				starttime = self.toplocationsstarttime[place]
 				endtime = self.toplocationsendtime[place]
-				
+
 				favorite = 1
-				
+
 				mo = self.toplocationsdaysmo[place]
 				tu = self.toplocationsdaystu[place]
 				we = self.toplocationsdayswe[place]
@@ -1637,11 +1647,11 @@ class Geolocation:
 				fr = self.toplocationsdaysfr[place]
 				sa = self.toplocationsdayssa[place]
 				su = self.toplocationsdayssu[place]
-						
+
 				week = [mo, tu, we, th, fr, sa, su]
 				week_sort = sorted(week, reverse = True)
 				maxday = week_sort [0]
-										
+
 				if week_sort[0] > 0 and week_sort[1] == 0:
 					favorite = 0
 				else:
@@ -1650,7 +1660,7 @@ class Geolocation:
 					if len(week_sort) > 0:
 						if week_sort[0] == 0:
 							favorite = 0
-				
+
 				day = []
 				fav = 0
 				mo_day = "Mo"
@@ -1659,8 +1669,8 @@ class Geolocation:
 				th_day = "Th"
 				fr_day = "Fr"
 				sa_day = "Sa"
-				su_day = "Su" 
-				
+				su_day = "Su"
+
 				if mo == 0:
 						mo_day = ""
 				else:
@@ -1671,7 +1681,7 @@ class Geolocation:
 						tu_day = ""
 				else:
 						if tu == maxday and favorite:
-							fav = "2"							
+							fav = "2"
 							day.append("Tu")
 				if we == 0:
 						we_day = ""
@@ -1703,10 +1713,9 @@ class Geolocation:
 						if su == maxday and favorite:
 							fav = "7"
 							day.append("Su")
-				
+
 				coordinates = place[1:place.find("]")]
 				location = place[20:len(place)]
-				
 
 				values = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
 				tmp1 = random.choice(values)
@@ -1720,576 +1729,530 @@ class Geolocation:
 
 				self.toploc.append([str(value), str(startdate.strftime('%m/%d/%Y')), str(enddate.strftime('%m/%d/%Y')), str(starttime), str(endtime), mo_day, tu_day, we_day, th_day, fr_day, sa_day, su_day, coordinates, location, fav, day, mo, tu, we, th, fr, sa, su, color])
 
-															
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Search_GeoTweets:
 	"""Get tweets based in geolocation info"""
-	toplocations = {}
-	toplocationsstartdate = {}
-	toplocatonsenddate = {}
-	geoimg = 0
-	adv_geo_info = []
-	
-	kml_info = []
-	adv_media_info = {}
-	toploc = []
-
-	user_sn = {} # social networks used by this Twitter user:{'twitteruser': [[Image], [Instagram User, Image], [Foursquare user, Image], [Facebook user, Image]] }. Example: { 'jlopez', ['julian.lopez', 'julianl', 'ad23', 'http://www.facebook.com/profile.php?id=343844'] }
-	user_taggeds = {} #  { 'user': ['by', 'media_url', 'tweet', 'author_image', 'date', 'time'] }
-	user_keywords = {} # { 'user': 'keywords' }
-	
-	adv_media_count = 0 # total images	
-	
 
 	# ----------------------------------------------------------------------
-	def set_geolocation_information(self, api, find, latlonkm, tweets, sdate, edate, stime, etime, hashtag, mentions, social_networks, parameters, user_images, hashtags_from_username, mentions_from_username, words_number, sources, source, find_text, activity):
+	def __init__(self):
+		try:
+
+			self.toplocations = {}
+			self.toplocationsstartdate = {}
+			self.toplocatonsenddate = {}
+			self.geoimg = 0
+			self.adv_geo_info = []
+			self.kml_info = []
+			self.adv_media_info = {}
+			self.toploc = []
+			self.user_sn = {}  # social networks used by this Twitter user:{'twitteruser': [[Image], [Instagram User, Image], [Foursquare user, Image], [Facebook user, Image]] }. Example: { 'jlopez', ['julian.lopez', 'julianl', 'ad23', 'http://www.facebook.com/profile.php?id=343844'] }
+			self.user_taggeds = {}  # { 'user': ['by', 'media_url', 'tweet', 'author_image', 'date', 'time'] }
+			self.user_keywords = {}  # { 'user': 'keywords' }
+			self.adv_media_count = 0  # total images
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+	# ----------------------------------------------------------------------
+	def set_search_information(self, hashtag, mentions, user_images, user_tweets, source, activity, top_words):
+		# Search global timeline (without coordinates)
+		try:
+
+			splace = ""
+			sgeo = ""
+			tweets_found = 0
+			tweets_count = 0
+			searched_tweets = []
+			last_id = -1
+			results = 0
+
+			search = "-thisisaimpossiblewordinatweet and -thisisnotpossibleinatweet"
+			with_words = ui.tb_include_words.text().replace(" ", " and +")
+			without_words = ui.tb_not_include_words.text().replace(" ", " and -")
+
+			tmp_count = 0
+			for status in tweepy.Cursor(api.search,
+										q=search + " and +" + with_words + " and -" + without_words,
+										count=int(ui.tb_tweets_number.text()),
+										since=ui.tb_sdate.text(),
+										until=ui.tb_edate.text(),
+										result_type='recent').items():
+
+				screen_name = ""
+				profile_image_url = ""
+				created_at = status.created_at
+
+				tmp_count += 1
+				tweets_count += 1
+				if tmp_count == 10 or tweets_count == int(ui.tb_tweets_number.text()) or tmp_count == int(
+						ui.tb_tweets_number.text()):
+					cursor = ui.tb_messages.textCursor()
+					cursor.movePosition(QtGui.QTextCursor.StartOfLine, 0)
+					cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
+					cursor.removeSelectedText()
+
+					br = 0
+					if tweets_count == int(ui.tb_tweets_number.text()):
+						br = 1
+					show_ui_message("Processing tweet " + str(tweets_count) + "/" + str(ui.tb_tweets_number.text()), "INFO", br)
+
+				if tmp_count == 10:
+					tmp_count = 0
+
+				app.processEvents()
+
+				if is_valid(status):
+					results = 1
+
+					if len(ui.tb_include_words.text()) > 0 or len(ui.tb_not_include_words.text()) > 0:
+						user_tweets.set_find_information(status)
+
+					if ui.cb_source_apps.isChecked():
+						source.set_sources_information(status)
+
+					if ui.cb_hashtags.isChecked():
+						hashtag.set_hashtags_information(status, "*")
+
+					if ui.cb_mentions.isChecked():
+						mentions.set_mentions_information(status, "*")
+
+					if ui.cb_metadata.isChecked():
+						# Get metadata information from user images
+						user_images.set_metadata_information(status)
+
+					if ui.cb_media.isChecked():
+						# Get images included in tweets
+						if not ui.cb_metadata.isChecked():
+							user_images.set_metadata_information(status)
+						user_images.username = status.user.screen_name
+						user_images.set_images_information(status)
+
+					if ui.cb_words_frequency.isChecked():
+						top_words.set_words_information(status)
+
+					if ui.cb_activity.isChecked():
+						activity.set_activity(status)
+
+					if ui.cb_show_tweets.isChecked():
+						user_tweets.set_find_information(status)
+
+					profile_image_url = status.user.profile_image_url_https.replace("_normal.", ".")
+					self.user_sn[status.user.screen_name] = [[profile_image_url], '', '', '']
+					coord = ""
+					try:
+						coord = str(status.geo['coordinates'])
+					except:
+						coord = ""
+
+					if not status.source:
+						status.source = ""
+
+					media_url = ""
+					media_type = ""
+					videos = []
+					keywords_instagram = []
+					extended_entities = ""
+
+					retweeted = 0
+					media = 0
+
+					# Identify RT and media content
+					if hasattr(status, 'retweeted_status'):
+						retweeted = 1
+						if status.retweeted_status.entities.has_key('media'):
+							media = 1
+
+					else:
+						retweeted = 0
+						if status.entities.has_key('media'):
+							media = 1
+
+					if media:
+						if retweeted:
+							medias = status.retweeted_status.entities['media']
+							try:
+								extended_entities = \
+									status.retweeted_status.extended_entities['media'][0]['video_info']['variants']
+							except Exception, e:
+								extended_entities = ""
+						else:
+							medias = status.entities['media']
+							try:
+								extended_entities = status.extended_entities['media'][0]['video_info']['variants']
+							except Exception, e:
+								extended_entities = ""
+
+						for m in medias:
+							media_url = m['media_url']
+							if str(media_url).find("video_thumb") >= 0:
+								if extended_entities:
+									for content in extended_entities:  # status.extended_entities['media'][0]['video_info']['variants']:
+										if str(content['url']).find(".mp4") >= 0:
+											videos.append([str(content['url']), content['bitrate']])
+
+									sort_vid = OrderedDict(sorted(videos, key=itemgetter(1), reverse=True))
+									vid_top = sort_vid.items()[0:1]
+									media_type = "Video"
+									media_url = str(vid_top[0][0])
+
+							if media_url.find("/media/") >= 0:
+								media_type = "Image"
+
+					else:
+						media = ""
+						if retweeted:
+							if status.retweeted_status.entities['urls']:
+								media = str(status.retweeted_status.entities['urls'][0]['expanded_url'])
+
+						else:
+							if status.entities['urls']:
+								media = str(status.entities['urls'][0]['expanded_url'])
+
+						if media.find("instagram") > 0:
+							# Instagram
+							try:
+
+								response = urllib2.urlopen(str(media))
+								html = response.read()
+								media_url = get_url_media_from_instagram(html)
+								tagged_users, owner, profile_image = get_tagged_users_from_instagram(html)
+								keywords_instagram = get_hashtags_from_instagram(html)
+
+								self.user_sn[status.user.screen_name][1] = [owner, profile_image]
+								for u in tagged_users:
+									if u in self.user_taggeds:
+										pass
+									else:
+										self.user_taggeds[u] = [str(status.author.screen_name), str(media_url),
+																status.id, profile_image_url,
+																str(status.created_at.strftime('%m/%d/%Y')),
+																str(status.created_at.time()), coord]
+
+								if media_url.find(".mp4") > 0:
+									media_type = "Video"
+								else:
+									media_type = "Image"
+
+							except Exception as e:
+								pass
+						else:
+							if media.find("swarmapp") > 0:
+								# Foursquare
+								media_url, owner, profile_image = get_url_media_from_foursquare(media)
+								user_facebook = ""
+								user_private_facebook = ""
+								url_facebook = ""
+
+								self.user_sn[status.user.screen_name][2] = [owner, profile_image]
+
+								if media_url:
+									url_facebook, user_facebook, profile_image = get_url_facebook_from_foursquare(
+										"https://foursquare.com/" + owner)
+									self.user_sn[status.user.screen_name][3] = [user_facebook, profile_image]
+
+							else:
+								media_url = ""
+
+					url = ""
+					owner = status.user.screen_name
+
+					if media_url and not media_type:
+						# GIF
+						media_type = "Image"
+
+					profile_image_url = status.user.profile_image_url_https.replace("_normal.", ".")
+					self.adv_geo_info.append(
+						[coord, status.user.screen_name, media_url, str(status.created_at.strftime('%m/%d/%Y')),
+						 str(status.created_at.time()), status.id, url, str(status.source), media_type, screen_name,
+						 profile_image_url, str(created_at.strftime('%m/%d/%Y')), str(created_at.time()),
+						 status.user.profile_image_url_https.replace("_normal.", "."), status.text])
+					tweets_found += 1
+					keywords_list = []
+					# Get keywords from twitter
+					if status.entities.has_key('hashtags'):
+						for h in status.entities['hashtags']:
+							keywords_list.append(h['text'].lower())
+					# List merge without dupe
+					keywords_list = list(set(keywords_list + keywords_instagram))
+
+				if tweets_count == int(ui.tb_tweets_number.text()):
+					break
+
+			return results
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+	# ----------------------------------------------------------------------
+	def set_geolocation_information(self, coordinates, hashtag, mentions, social_networks, user_images, user_tweets, source, activity, top_words):
 		# Search with coordinates
 		try:
+
+			results = 0
+			self.adv_geo_info = []
 			splace = ""
 			sgeo = ""
 			media = 0
-			top_words = Words_Tweets()
-			#activity = Activity()
-
-			tweets_count = int(tweets)		
+			include_words = ""
+			tweets_count = 0
 			searched_tweets = []
 			last_id = -1
 			tweets_found = 0
-
-			l = find.split()
-			find = l
+			tmp_count = 0
 
 			for status in tweepy.Cursor(api.search,
-				q="",
-				geocode=latlonkm,
-				#count=200,
-				since=sdate,
-				until=edate,
-				result_type='recent').items():
+										q="",
+										geocode=str(coordinates),
+										count=int(ui.tb_tweets_number.text()),
+										since=str(ui.tb_sdate.text()),
+										until=str(ui.tb_edate.text()),
+										result_type='recent').items():
 
 				add = 1
 				retweeted = 0
 
 				# Media
-				if status.entities.has_key('media') :
+				if status.entities.has_key('media'):
 					media = 1
 				else:
 					media = 0
-				
+
 				# Retweeted
 				screen_name = ""
 				profile_image_url = ""
 				created_at = status.created_at
-				if hasattr (status, 'retweeted_status'): 
+				if hasattr(status, 'retweeted_status'):
 					profile_image_url = status.retweeted_status.author.profile_image_url_https.replace("_normal.", ".")
 					screen_name = status.retweeted_status.author.screen_name
 					created_at = status.retweeted_status.created_at
 					retweeted = 1
-				else: 
+				else:
 					profile_image_url = status.user.profile_image_url_https.replace("_normal.", ".")
 					screen_name = status.user.screen_name
 
-				for f in find:
-					operator = ""
-					string = ""
-					to_search = re.search('\[(.*)\](.*)', f)
-					if to_search:
-						operator = str(to_search.group(1)).lower()
-						string = str(to_search.group(2)).lower()
+				if is_valid(status):
+					results = 1
+					if ui.cb_source_apps.isChecked():
+						source.set_sources_information(status)
 
+					if ui.cb_hashtags.isChecked():
+						hashtag.set_hashtags_information(status, "*")
 
-					if ((operator and string) or ( (operator == "+r") or (operator == "-r") or (operator == "-m") or (operator == "+m") )):
-						# operator: [+]contain [-]not_contain [+r]retweeted [-r]not_retweeted [+m]contain_media [-m]not_contain_media
+					if ui.cb_mentions.isChecked():
+						mentions.set_mentions_information(status, "*")
 
-						if operator == "-":
-							# Not contain this word
-							if string in status.text.lower():
-								add = 0
-						elif operator == "+":
-							# Contain this word
-							if string not in status.text.lower() and add:
-								add = 0
-						elif operator == "-r":
-							# Not retweeted
-							if retweeted:
-								add = 0
-						elif operator == "+r":
-							# Retweeted
-							if not retweeted:
-								add = 0
-						elif operator == "-m":
-							# Not contain media
-							if media:
-								add = 0
-						elif operator == "+m":
-							# Contain media
-							if not media:
-								add = 0
+					if ui.cb_metadata.isChecked():
+						# Get metadata information from user images
+						user_images.set_metadata_information(status)
 
-					else:
-						add = 0
+					if ui.cb_media.isChecked():
+						# Get images included in tweets
+						if not ui.cb_metadata.isChecked():
+							user_images.set_metadata_information(status)
+						user_images.username = screen_name
+						user_images.set_images_information(status)
 
+					if ui.cb_words_frequency.isChecked():
+						top_words.set_words_information(status)
 
-				if find_text:
-					user_tweets = User_Tweets()
-					text = find_text.split()
-					user_tweets.find_text = text
-					user_tweets.set_find_information(text, status)
+					if ui.cb_activity.isChecked():
+						activity.set_activity(status)
 
+					if ui.cb_show_tweets.isChecked():
+						user_tweets.set_find_information(status)
 
-				if add:
-					
-					if str(status.created_at.time()) <= etime and str(status.created_at.time()) >= stime: #and str(status.created_at.strftime('%Y-%m-%d')) <= edate and str(status.created_at.strftime('%Y-%m-%d')) >= sdate:
-
-						if sources:
-							source.set_sources_information(status)
-						if parameters.output_hashtag:
-							hashtag.set_hashtags_information(status, hashtags_from_username)
-						if parameters.output_mention:
-							mentions.set_mentions_information(status, mentions_from_username)
-						if parameters.output_media:
-							user_images.set_images_information(status)
-						if words_number:
-							top_words.set_words_information(words_number, status)
-						if parameters.output_activity:
-							activity.set_activity(status)
-
-						profile_image_url = status.user.profile_image_url_https.replace("_normal.", ".")
-						self.user_sn[status.user.screen_name] = [[profile_image_url],'','','']
+					profile_image_url = status.user.profile_image_url_https.replace("_normal.", ".")
+					self.user_sn[status.user.screen_name] = [[profile_image_url], '', '', '']
+					coord = ""
+					try:
+						coord = str(status.geo['coordinates'])
+					except:
 						coord = ""
-						try:
-							coord = str(status.geo['coordinates'])
-						except:
-							coord = ""
-							
-						if not status.source:
-							status.source = ""
-																					
-						media_url = ""
-						media_type = ""
-						videos = []
-						keywords_instagram = []
-			
-						if parameters.output_media:
-							# Show media content included in tweets					
-										
-							if status.entities.has_key('media') :
-								medias = status.entities['media']
-								for m in medias :
-									media_url = m['media_url']
-									if str(media_url).find("video_thumb") >= 0:
-										for content in status.extended_entities['media'][0]['video_info']['variants']:
-											if str(content['url']).find(".mp4") >= 0:
-												videos.append([str(content['url']), content['bitrate']])
 
-										sort_vid = OrderedDict(sorted(videos, key=itemgetter(1), reverse=True))
-										vid_top = sort_vid.items()[0:1]
+					if not status.source:
+						status.source = ""
 
-										media_type = "Video" 
-										media_url = str(vid_top[0][0])
+					media_url = ""
+					media_type = ""
+					videos = []
+					keywords_instagram = []
 
-									if media_url.find("/media/") >= 0:
-										media_type = "Image"
-
-							
-							else:
-								if status.entities['urls']:
-									media = str(status.entities['urls'][0]['expanded_url'])							
-									if media.find("instagram") > 0:
-										# Instagram
-										try:
-											
-											response = urllib2.urlopen(str(media))  
-											html = response.read()
-											
-											media_url = get_url_media_from_instagram(html)
-											tagged_users, owner, profile_image = get_tagged_users_from_instagram(html)
-											keywords_instagram = get_hashtags_from_instagram(html)
-											
-
-											self.user_sn[status.user.screen_name][1] = [owner, profile_image]
-											for u in tagged_users:
-												if u in self.user_taggeds: 
-													pass
-												else:
-													self.user_taggeds[u]=[str(status.author.screen_name), str(media_url), status.id, profile_image_url, str(status.created_at.strftime('%m/%d/%Y')), str(status.created_at.time()), coord]
-											if media_url.find(".mp4") > 0:
-												media_type = "Video"
-											else:
-												media_type = "Image"
-										except Exception as e:
-											pass
-							
-									else:
-										if media.find("swarmapp") > 0:
-											# Foursquare
-											media_url, owner, profile_image = get_url_media_from_foursquare(media)
-											user_facebook = ""
-											user_private_facebook = ""
-											url_facebook = ""
-
-											self.user_sn[status.user.screen_name][2] = [owner, profile_image] 
-											
-											if media_url:
-												url_facebook, user_facebook, profile_image = get_url_facebook_from_foursquare("https://foursquare.com/"+owner)
-												self.user_sn[status.user.screen_name][3] = [user_facebook, profile_image] 
-
-										else:
-											media_url = ""
-
-
-
-						url = ""
-						owner = status.user.screen_name
-
-						if media_url and not media_type:
-							# GIF
-							media_type = "Image"
-						
-						profile_image_url = status.user.profile_image_url_https.replace("_normal.", ".")
-						self.adv_geo_info.append([coord, status.user.screen_name, media_url, str(status.created_at.strftime('%m/%d/%Y')), str(status.created_at.time()), status.id, url, str(status.source), media_type, screen_name, profile_image_url, str(created_at.strftime('%m/%d/%Y')), str(created_at.time()), status.user.profile_image_url_https.replace("_normal.", ".")])
-						tweets_found += 1
-						
-						keywords_list = []
-						# Get keywords from twitter
-						if status.entities.has_key('hashtags'):
-							for h in status.entities['hashtags']:
-								keywords_list.append(h['text'].lower())
-
-						
-						# List merge without dupe
-						keywords_list = list(set(keywords_list + keywords_instagram))					
-
-						keywords_tmp = ""
-						if self.user_keywords:
-							if self.user_keywords.has_key(status.user.screen_name):
-								keywords_tmp = self.user_keywords[status.user.screen_name]
-								# List merge without dupe
-								keywords_list = list(set(keywords_list + keywords_tmp))					
-								
-						self.user_keywords[status.user.screen_name] = keywords_list
-						
-				sys.stdout.write("\r\t\t" + str(int(tweets) - tweets_count + 1) + " tweets analyzed")
-				sys.stdout.flush()										
-								
-				tweets_count -= 1
-
-				if tweets_count == 0:
-					break
-
-			sys.stdout.write("\n\t\t" + str(tweets_found) + " tweets found")
-
-		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
-
-	# ----------------------------------------------------------------------
-	def set_search_information(self, api, find, latlonkm, tweets, sdate, edate, stime, etime, hashtag, mentions, social_networks, parameters, user_images, hashtags_from_username, mentions_from_username, words_number, sources, source, find_text, activity):
-		# Search without coordinates
-		try:
-			splace = ""
-			sgeo = ""
-			media = 0
-			tweets_found = 0
-			top_words = Words_Tweets()
-
-			tweets_count = int(tweets)		
-			searched_tweets = []
-			last_id = -1
-
-			l = find.split()
-			find = l
-
-			with_words = ""
-			without_words = ""
-
-			search = "-thisisaimpossiblewordinatweet and -thisisnotpossibleinatweet"
-
-			for f in find:
-				operator = ""
-				string = ""
-				to_search = re.search('\[(.*)\](.*)', f)
-				if to_search:
-					operator = str(to_search.group(1)).lower()
-					string = str(to_search.group(2)).lower()
-
-				if ((operator and string) or ( (operator == "+r") or (operator == "-r") or (operator == "-m") or (operator == "+m") )):
-					# operator: [+]contain [-]not_contain [+r]retweeted [-r]not_retweeted [+m]contain_media [-m]not_contain_media
-
-					if operator == "-":
-						# Not contain this word
-						without_words += " and -" + string
-					elif operator == "+":
-						# Contain this word
-						with_words += " and " + string
-
-
-			for status in tweepy.Cursor(api.search,
-				q=search + with_words + without_words,
-				#geocode=latlonkm,
-				#count=100,
-				since=sdate,
-				until=edate,
-				result_type='recent').items():
-
-
-				add = 1
-				retweeted = 0
-				media = 0
-
-				screen_name = ""
-				profile_image_url = ""
-				created_at = status.created_at
-
-				if hasattr (status, 'retweeted_status'): 
-					retweeted = 1
-					if status.retweeted_status.entities.has_key('media'):
-						media = 1
-	
-				else: 
-					retweeted = 0
 					if status.entities.has_key('media'):
-						media = 1
-										
-				for f in find:
-					operator = ""
-					string = ""
-					to_search = re.search('\[(.*)\](.*)', f)
-					if to_search:
-						operator = str(to_search.group(1)).lower()
-						string = str(to_search.group(2)).lower()
+						medias = status.entities['media']
+						for m in medias:
+							media_url = m['media_url']
+							if str(media_url).find("video_thumb") >= 0:
+								for content in status.extended_entities['media'][0]['video_info']['variants']:
+									if str(content['url']).find(".mp4") >= 0:
+										videos.append([str(content['url']), content['bitrate']])
 
+								sort_vid = OrderedDict(sorted(videos, key=itemgetter(1), reverse=True))
+								vid_top = sort_vid.items()[0:1]
 
-					if ((operator and string) or ( (operator == "+r") or (operator == "-r") or (operator == "-m") or (operator == "+m") )):
-						# operator: [+]contain [-]not_contain [+r]retweeted [-r]not_retweeted [+m]contain_media [-m]not_contain_media
+								media_type = "Video"
+								media_url = str(vid_top[0][0])
 
-						if operator == "-r":
-							# Not retweeted
-							if retweeted:
-								add = 0
-						elif operator == "+r":
-							# Retweeted
-							if not retweeted:
-								add = 0
-						elif operator == "-m":
-							# Not contain media
-							if media:
-								add = 0
-						elif operator == "+m":
-							# Contain media
-							if not media:
-								add = 0
+							if media_url.find("/media/") >= 0:
+								media_type = "Image"
 
-					else:
-						add = 0
+					if status.entities['urls']:
+						media = str(status.entities['urls'][0]['expanded_url'])
+						if media.find("instagram") > 0:
+							# Instagram
+							try:
+								self.user_sn[status.user.screen_name][1] = ["?", "?"]
+								response = urllib2.urlopen(str(media))
+								html = response.read()
 
-				if find_text:
-					user_tweets = User_Tweets()
-					text = find_text.split()
-					user_tweets.find_text = text
-					user_tweets.set_find_information(text, status)
+								media_url = get_url_media_from_instagram(html)
+								tagged_users, owner, profile_image = get_tagged_users_from_instagram(html)
+								keywords_instagram = get_hashtags_from_instagram(html)
 
+								if owner and profile_image:
+									self.user_sn[status.user.screen_name][1] = [owner, profile_image]
 
-				if add:
-										
-					if str(status.created_at.time()) <= etime and str(status.created_at.time()) >= stime: #and str(status.created_at.strftime('%Y-%m-%d')) <= edate and str(status.created_at.strftime('%Y-%m-%d')) >= sdate:
-
-						if sources:
-							source.set_sources_information(status)
-						if parameters.output_hashtag:
-							hashtag.set_hashtags_information(status, hashtags_from_username)
-						if parameters.output_mention:
-							mentions.set_mentions_information(status, mentions_from_username)
-						if parameters.output_media:
-							user_images.set_images_information(status)
-						if words_number:
-							top_words.set_words_information(words_number, status)
-						if parameters.output_activity:
-							activity.set_activity(status)
-							
-						profile_image_url = status.user.profile_image_url_https.replace("_normal.", ".")
-						self.user_sn[status.user.screen_name] = [[profile_image_url],'','','']
-						coord = ""
-						try:
-							coord = str(status.geo['coordinates'])
-						except:
-							coord = ""
-							
-						if not status.source:
-							status.source = ""
-																					
-						media_url = ""
-						media_type = ""
-						videos = []
-						keywords_instagram = []
-						extended_entities = ""
-
-						if media:
-							if retweeted:
-								medias = status.retweeted_status.entities['media']
-								if str(media_url).find("video_thumb") >= 0:
-									extended_entities = status.retweeted_status.extended_entities['media'][0]['video_info']['variants']
-							else:
-								medias = status.entities['media']
-								if str(media_url).find("video_thumb") >= 0:
-									extended_entities = status.extended_entities['media'][0]['video_info']['variants']
-
-							for m in medias :
-								media_url = m['media_url']
-								if str(media_url).find("video_thumb") >= 0:
-									if extended_entities:
-										for content in extended_entities: #status.extended_entities['media'][0]['video_info']['variants']:
-											if str(content['url']).find(".mp4") >= 0:
-												videos.append([str(content['url']), content['bitrate']])
-									
-										sort_vid = OrderedDict(sorted(videos, key=itemgetter(1), reverse=True))
-										vid_top = sort_vid.items()[0:1]
-										media_type = "Video" 
-										media_url = str(vid_top[0][0])
-									
-								if media_url.find("/media/") >= 0:
+								for u in tagged_users:
+									if u in self.user_taggeds:
+										pass
+									else:
+										self.user_taggeds[u] = [str(status.author.screen_name),
+																str(media_url), status.id,
+																profile_image_url,
+																str(status.created_at.strftime('%m/%d/%Y')),
+																str(status.created_at.time()), coord]
+								if media_url.find(".mp4") > 0:
+									media_type = "Video"
+								else:
 									media_type = "Image"
+							except Exception as e:
+								pass
 
 						else:
-							media = ""
-							if retweeted:
-								if status.retweeted_status.entities['urls']:
-									media = str(status.retweeted_status.entities['urls'][0]['expanded_url'])							
+							if media.find("swarmapp") > 0:
+								# Foursquare
+								self.user_sn[status.user.screen_name][2] = ["?", "?"]
+								tmp_media_url = ""
+								if media_url:
+									tmp_media_url = media_url
+								media_url, owner, profile_image = get_url_media_from_foursquare(media)
+								if tmp_media_url:
+									media_url = tmp_media_url
+								user_facebook = ""
+								user_private_facebook = ""
+								url_facebook = ""
 
+								if owner and profile_image:
+									self.user_sn[status.user.screen_name][2] = [owner, profile_image]
+
+								if media_url:
+									url_facebook, user_facebook, profile_image = get_url_facebook_from_foursquare(
+										"https://foursquare.com/" + owner)
+									self.user_sn[status.user.screen_name][3] = [user_facebook, profile_image]
 							else:
-								if status.entities['urls']:
-									media = str(status.entities['urls'][0]['expanded_url'])							
+								media_url = ""
 
+					url = ""
+					owner = status.user.screen_name
+					if media_url and not media_type:
+						# GIF
+						media_type = "Image"
 
-							if media.find("instagram") > 0:
-								# Instagram
-								try:
-										
-									response = urllib2.urlopen(str(media))  
-									html = response.read()
-									media_url = get_url_media_from_instagram(html)
-									tagged_users, owner, profile_image = get_tagged_users_from_instagram(html)
-									keywords_instagram = get_hashtags_from_instagram(html)
+					profile_image_url = status.user.profile_image_url_https.replace("_normal.", ".")
+					self.adv_geo_info.append(
+						[coord, status.user.screen_name, media_url, str(status.created_at.strftime('%m/%d/%Y')),
+						 str(status.created_at.time()), status.id, url, str(status.source), media_type, screen_name,
+						 profile_image_url, str(created_at.strftime('%m/%d/%Y')), str(created_at.time()),
+						 status.user.profile_image_url_https.replace("_normal.", ".")])
+					tweets_found += 1
 
+					keywords_list = []
+					# Get keywords from twitter
+					if status.entities.has_key('hashtags'):
+						for h in status.entities['hashtags']:
+							keywords_list.append(h['text'].lower())
 
-									self.user_sn[status.user.screen_name][1] = [owner, profile_image]
-									for u in tagged_users:
-										if u in self.user_taggeds: 
-											pass
-										else:
-											self.user_taggeds[u]=[str(status.author.screen_name), str(media_url), status.id, profile_image_url, str(status.created_at.strftime('%m/%d/%Y')), str(status.created_at.time()), coord]
+					# List merge without dupe
+					keywords_list = list(set(keywords_list + keywords_instagram))
 
-									if media_url.find(".mp4") > 0:
-										media_type = "Video"
-									else:
-										media_type = "Image"
+					keywords_tmp = ""
+					if self.user_keywords:
+						if self.user_keywords.has_key(status.user.screen_name):
+							keywords_tmp = self.user_keywords[status.user.screen_name]
+							# List merge without dupe
+							keywords_list = list(set(keywords_list + keywords_tmp))
 
-								except Exception as e:
-									pass
-							else:
-								if media.find("swarmapp") > 0:
-									# Foursquare
-									media_url, owner, profile_image = get_url_media_from_foursquare(media)
-									user_facebook = ""
-									user_private_facebook = ""
-									url_facebook = ""
+					self.user_keywords[status.user.screen_name] = keywords_list
 
-									self.user_sn[status.user.screen_name][2] = [owner, profile_image] 
-										
-									if media_url:
-										url_facebook, user_facebook, profile_image = get_url_facebook_from_foursquare("https://foursquare.com/"+owner)
-										self.user_sn[status.user.screen_name][3] = [user_facebook, profile_image] 
+				tmp_count += 1
+				tweets_count += 1
+				if tmp_count == 10 or tweets_count == int(ui.tb_tweets_number.text()) or tmp_count == int(ui.tb_tweets_number.text()):
+					cursor = ui.tb_messages.textCursor()
+					cursor.movePosition(QtGui.QTextCursor.StartOfLine, 0)
+					cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
+					cursor.removeSelectedText()
 
-								else:
-									media_url = ""
+					br = 0
+					if tweets_count == int(ui.tb_tweets_number.text()):
+						br = 1
+					show_ui_message("Processing tweet " + str(tweets_count) + "/" + str(ui.tb_tweets_number.text()), "INFO", br)
 
-						
-						url = ""
-						owner = status.user.screen_name
+				if tmp_count == 10:
+					tmp_count = 0
 
+				app.processEvents()
 
-						if media_url and not media_type:
-							# GIF
-							media_type = "Image"
-						
-
-						profile_image_url = status.user.profile_image_url_https.replace("_normal.", ".")
-						self.adv_geo_info.append([coord, status.user.screen_name, media_url, str(status.created_at.strftime('%m/%d/%Y')), str(status.created_at.time()), status.id, url, str(status.source), media_type, screen_name, profile_image_url, str(created_at.strftime('%m/%d/%Y')), str(created_at.time()), status.user.profile_image_url_https.replace("_normal.", "."), status.text])
-						tweets_found += 1
-						
-						keywords_list = []
-						# Get keywords from twitter
-						if status.entities.has_key('hashtags'):
-							for h in status.entities['hashtags']:
-								keywords_list.append(h['text'].lower())
-
-						
-						# List merge without dupe
-						keywords_list = list(set(keywords_list + keywords_instagram))					
-
-						keywords_tmp = ""
-						if self.user_keywords:
-							if self.user_keywords.has_key(status.user.screen_name):
-								keywords_tmp = self.user_keywords[status.user.screen_name]
-								# List merge without dupe
-								keywords_list = list(set(keywords_list + keywords_tmp))					
-								
-						self.user_keywords[status.user.screen_name] = keywords_list
-						
-				sys.stdout.write("\r\t\t" + str(int(tweets) - tweets_count + 1) + " tweets analyzed")
-				sys.stdout.flush()										
-								
-				tweets_count -= 1
-
-				if tweets_count == 0:
+				if tweets_count == int(ui.tb_tweets_number.text()):
 					break
 
-			sys.stdout.write("\n\t\t" + str(tweets_found) + " tweets found")
+			return results
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Hashtags:
 	"""Get hashtags included in tweets"""
-	# hashtag = [hashtag1, hashtag2, ... ]
-	# hashtags_firstdate = {hashtag1: first_date1, hashtag2: first_date2, ... ]
-	# hashtags_lastdate = {hashtag1: last_date1, hashtag2: last_date2, ... ]
-	# hashtags_count = {hashtag1: tweets_number1, hashtag2: tweets_number2, ... ]
-	hashtags = []
-	hashtags_owner = {}
-	hashtags_firstdate = {}
-	hashtags_lastdate = {}
-	hashtags_count = {}
-	hashtags_tweet = []
-	hashtags_rt = {}
-	hashtags_fv = {}
-	hashtags_results1 = 0
-	hashtags_results2 = 0
-	hashtags_results3 = 0	
-	hashtags_top = {}
-	hashtags_list = []
-	hashtags_users = {}
-	
+
+	# ----------------------------------------------------------------------
+	def __init__(self):
+		try:
+
+			# hashtag = [hashtag1, hashtag2, ... ]
+			# hashtags_firstdate = {hashtag1: first_date1, hashtag2: first_date2, ... ]
+			# hashtags_lastdate = {hashtag1: last_date1, hashtag2: last_date2, ... ]
+			# hashtags_count = {hashtag1: tweets_number1, hashtag2: tweets_number2, ... ]
+			self.hashtags = []
+			self.hashtags_owner = {}
+			self.hashtags_firstdate = {}
+			self.hashtags_lastdate = {}
+			self.hashtags_count = {}
+			self.hashtags_tweet = []
+			self.hashtags_rt = {}
+			self.hashtags_fv = {}
+			self.hashtags_results1 = 0
+			self.hashtags_results2 = 0
+			self.hashtags_results3 = 0
+			self.hashtags_top = {}
+			self.hashtags_list = []
+			self.hashtags_users = {}
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
 	# ----------------------------------------------------------------------
 	def set_hashtags_information(self, tweet, from_username):
 		try:
-							
-			tmp = ""
 
-			self.hashtags_list = []			
+			tmp = ""
+			self.hashtags_list = []
 
 			# Identify the tweet author
-			if hasattr (tweet, 'retweeted_status'): 
+			if hasattr (tweet, 'retweeted_status'):
 				screen_name = tweet.retweeted_status.author.screen_name.encode('utf-8')
 			else:
 				screen_name = tweet.user.screen_name.encode('utf-8')
@@ -2299,7 +2262,7 @@ class Hashtags:
 				try:
 					fav_count = tweet.retweeted_status.favorite_count
 				except Exception, e:
-					fav_count = tweet.favorite_count			
+					fav_count = tweet.favorite_count
 
 				for i in tweet.entities['hashtags']:
 
@@ -2308,18 +2271,18 @@ class Hashtags:
 						self.hashtags_list.append(i['text'])
 
 					if i['text'].upper() in (name.upper() for name in self.hashtags_rt):
-						self.hashtags_rt[i['text'].upper()] += tweet.retweet_count						
+						self.hashtags_rt[i['text'].upper()] += tweet.retweet_count
 					else:
 						self.hashtags_rt[i['text'].upper()] = tweet.retweet_count
-					
+
 					if i['text'].upper() in (name.upper() for name in self.hashtags_fv):
-						self.hashtags_fv[i['text'].upper()] += fav_count						
+						self.hashtags_fv[i['text'].upper()] += fav_count
 					else:
 						self.hashtags_fv[i['text'].upper()] = fav_count
 
 				screen_name = ""
 				if len(tmp):
-					if hasattr (tweet, 'retweeted_status'): 
+					if hasattr (tweet, 'retweeted_status'):
 						screen_name = tweet.retweeted_status.author.screen_name
 						profile_image_url = tweet.retweeted_status.author.profile_image_url.replace("_normal.", ".")
 						#profile_image_url = tweet.retweeted_status.author.profile_image_url
@@ -2332,9 +2295,9 @@ class Hashtags:
 
 					self.hashtags_tweet.append([str(tweet.created_at.strftime('%m/%d/%Y')), str(tweet.created_at.time()), str(tweet.retweet_count), str(fav_count), tmp, str(tweet.id), screen_name, profile_image_url, location])
 					self.hashtags_results1 += 1
-				
+
 				try:
-					# Hashtags tweeted by a user 
+					# Hashtags tweeted by a user
 					if len (self.hashtags_users[screen_name]):
 						self.hashtags_users[screen_name].extend(self.hashtags_list)
 					else:
@@ -2345,14 +2308,14 @@ class Hashtags:
 				for h in tweet.entities['hashtags']:
 					orig = h['text']
 					upper = h['text'].upper()
-					
+
 					if upper in (name.upper() for name in self.hashtags):
 						self.hashtags_count[upper] += 1
 						if tweet.created_at < self.hashtags_firstdate[upper]:
 							self.hashtags_firstdate[upper] = tweet.created_at
 						if tweet.created_at > self.hashtags_lastdate[upper]:
 							self.hashtags_lastdate[upper] = tweet.created_at
-							
+
 					else:
 						self.hashtags.append(orig)
 						self.hashtags_count[upper] = 1
@@ -2362,57 +2325,61 @@ class Hashtags:
 						self.hashtags_owner[upper] = screen_name
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def set_global_information(self):
 		try:
 
-			for h in self.hashtags:				
+			for h in self.hashtags:
 				self.hashtags_top[h] = self.hashtags_count[h.upper()]
 
 			sort_has = OrderedDict(sorted(self.hashtags_top.items(), key=itemgetter(1), reverse=True))
 			self.hashtags_top = sort_has.items()[0:10]
 			self.hashtags_results3 = len (self.hashtags_top)
-											
-		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+
+		except Exception as e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Mentions:
 	""" Get mentions included in tweets """
-	# mention = [mention1, mention2, ... ]
-	# mentions_count = {mention1: tweets_number1, mention2: tweets_number2, ... ]
-	# mentions_firstdate = {mention1: first_date1, mention2: first_date2, ... ]
-	# mentions_lastdate = {mention1: last_date1, mention2: last_date2, ... ]
-	mentions = []
-	mentions_firstdate = {}
-	mentions_lastdate = {}
-	mentions_name = {}
-	mentions_count = {}
-	mentions_tweet = []
-	mentions_rt = {}
-	mentions_fv = {}
-	mentions_results3 = 0
-	mentions_top = {}
-	mentions_list = []
-	mentions_users = {}
-	mentions_profileimg = {}
-	
+
+	# ----------------------------------------------------------------------
+	def __init__(self):
+		try:
+
+			# mention = [mention1, mention2, ... ]
+			# mentions_count = {mention1: tweets_number1, mention2: tweets_number2, ... ]
+			# mentions_firstdate = {mention1: first_date1, mention2: first_date2, ... ]
+			# mentions_lastdate = {mention1: last_date1, mention2: last_date2, ... ]
+			self.mentions = []
+			self.mentions_firstdate = {}
+			self.mentions_lastdate = {}
+			self.mentions_name = {}
+			self.mentions_count = {}
+			self.mentions_tweet = []
+			self.mentions_rt = {}
+			self.mentions_fv = {}
+			self.mentions_results3 = 0
+			self.mentions_top = {}
+			self.mentions_list = []
+			self.mentions_users = {}
+			self.mentions_profileimg = {}
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
 	# ----------------------------------------------------------------------
 	def set_mentions_information(self, tweet, from_username):
 		try:
 
 			tmp = ""
-
-			self.mentions_list = []			
+			self.mentions_list = []
 
 			# Identify the tweet author
-			if hasattr (tweet, 'retweeted_status'): 
+			if hasattr (tweet, 'retweeted_status'):
 				screen_name = tweet.retweeted_status.author.screen_name.encode('utf-8')
 			else:
 				screen_name = tweet.user.screen_name.encode('utf-8')
@@ -2422,26 +2389,26 @@ class Mentions:
 				try:
 					fav_count = tweet.retweeted_status.favorite_count
 				except Exception, e:
-					fav_count = tweet.favorite_count			
-		
+					fav_count = tweet.favorite_count
+
 				for i in tweet.entities['user_mentions']:
 					if i['screen_name'].encode('utf-8'):
 						tmp = tmp + "@" + i['screen_name'].encode('utf-8') + " "
 						self.mentions_list.append(i['screen_name'])
 
 					if i['screen_name'].encode('utf-8').upper() in (name.upper() for name in self.mentions_rt):
-						self.mentions_rt[i['screen_name'].encode('utf-8').upper()] += tweet.retweet_count						
+						self.mentions_rt[i['screen_name'].encode('utf-8').upper()] += tweet.retweet_count
 					else:
 						self.mentions_rt[i['screen_name'].encode('utf-8').upper()] = tweet.retweet_count
-					
+
 					if i['screen_name'].encode('utf-8').upper() in (name.upper() for name in self.mentions_fv):
-						self.mentions_fv[i['screen_name'].encode('utf-8').upper()] += fav_count						
+						self.mentions_fv[i['screen_name'].encode('utf-8').upper()] += fav_count
 					else:
 						self.mentions_fv[i['screen_name'].encode('utf-8').upper()] = fav_count
-				
+
 				screen_name = ""
 				if len(tmp):
-					if hasattr (tweet, 'retweeted_status'): 
+					if hasattr (tweet, 'retweeted_status'):
 						screen_name = tweet.retweeted_status.author.screen_name.encode('utf-8')
 						profile_image_url = tweet.retweeted_status.author.profile_image_url.replace("_normal.", ".")
 						#profile_image_url = tweet.retweeted_status.author.profile_image_url
@@ -2453,9 +2420,9 @@ class Mentions:
 						location = tweet.user.location.encode('utf-8')
 
 					self.mentions_tweet.append([str(tweet.created_at.strftime('%m/%d/%Y')), str(tweet.created_at.time()), str(tweet.retweet_count), str(fav_count), tmp, str(tweet.id), screen_name, profile_image_url, location])
-			
+
 				try:
-					# Mentions tweeted by a user 
+					# Mentions tweeted by a user
 					if len (self.mentions_users[screen_name]):
 						self.mentions_users[screen_name].extend(self.mentions_list)
 					else:
@@ -2463,7 +2430,7 @@ class Mentions:
 				except Exception, e:
 					self.mentions_users[screen_name] = self.mentions_list
 
-			
+
 				for m in tweet.entities['user_mentions']:
 					orig = m['screen_name'].encode('utf-8')
 					upper = m['screen_name'].encode('utf-8').upper()
@@ -2473,115 +2440,113 @@ class Mentions:
 							self.mentions_firstdate[upper] = tweet.created_at
 						if tweet.created_at > self.mentions_lastdate[upper]:
 							self.mentions_lastdate[upper] = tweet.created_at
-							
+
 					else:
 						self.mentions.append(orig)
 						self.mentions_count[upper] = 1
 						self.mentions_firstdate[upper] = tweet.created_at
 						self.mentions_lastdate[upper] = tweet.created_at
 						self.mentions_name[upper] = str(m['name'].encode('utf-8'))
-				
-		except Exception, e:
-			show_error(e)
-			sys.exit(1)
 
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def set_global_information(self):
 		try:
 
-			for h in self.mentions:				
+			for h in self.mentions:
 				self.mentions_top[h] = self.mentions_count[h.upper()]
 
 			sort_has = OrderedDict(sorted(self.mentions_top.items(), key=itemgetter(1), reverse=True))
 			self.mentions_top = sort_has.items()[0:10]
 			self.mentions_results3 = len (self.mentions_top)
-											
-		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+
+		except Exception as e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class User_Tweets:
 	""" Handle user tweets """
-	
-	find_text = [] # Search text in tweets
-	tweets_find = [] # [[text, date, time, ID, screen_name, profile_image_url, location, name], ...]
-	
 
 	# ----------------------------------------------------------------------
-	def set_find_information(self, text, tweet):
+	def __init__(self):
 		try:
+
+			self.tweets_find = []  # [[text, date, time, ID, screen_name, profile_image_url, location, name], ...]
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+	# ----------------------------------------------------------------------
+	def set_find_information(self, tweet):
+		try:
+
 			# Identify a tweet with all user criteria
-			add = 1
-			
 			retweeted = 0
 			media = 0
-
 			media_url = ""
 			media_type = ""
 			videos = []
 			source_app = ""
 
-
 			if tweet.entities.has_key('media') :
-				media = 1
-						
-				if tweet.entities.has_key('media') :
-					medias = tweet.entities['media']
-					for m in medias :
-						media_url = m['media_url']
-						if str(media_url).find("video_thumb") >= 0:
-							for content in tweet.extended_entities['media'][0]['video_info']['variants']:
-								if str(content['url']).find(".mp4") >= 0:
-									videos.append([str(content['url']), content['bitrate']])
+				medias = tweet.entities['media']
+				for m in medias :
+					media_url = m['media_url']
+					if str(media_url).find("video_thumb") >= 0:
+						for content in tweet.extended_entities['media'][0]['video_info']['variants']:
+							if str(content['url']).find(".mp4") >= 0:
+								videos.append([str(content['url']), content['bitrate']])
 
-							sort_vid = OrderedDict(sorted(videos, key=itemgetter(1), reverse=True))
-							vid_top = sort_vid.items()[0:1]
+						sort_vid = OrderedDict(sorted(videos, key=itemgetter(1), reverse=True))
+						vid_top = sort_vid.items()[0:1]
 
-							media_type = "Video" 
-							media_url = str(vid_top[0][0])
+						media_type = "Video"
+						media_url = str(vid_top[0][0])
 
-						if media_url.find("/media/") >= 0:
-							media_type = "Image"
+					if media_url.find("/media/") >= 0:
+						media_type = "Image"
 
-				else:
-					if tweet.entities['urls']:
-						media = str(tweet.entities['urls'][0]['expanded_url'])							
-						if media.find("instagram") > 0:
-							# Instagram
-							try:
-								response = urllib2.urlopen(str(media))  
-								html = response.read()
-								media_url = get_url_media_from_instagram(html)
-								if media_url.find(".mp4") > 0:
-									media_type = "Video"
-								else:
-									media_type = "Image"
-							except Exception as e:
-								pass
-						else:
-							if media.find("swarmapp") > 0:
-								# Foursquare
-								media_url, owner, profile_image = get_url_media_from_foursquare(media)
-								if media_url.find(".mp4") > 0:
-									media_type = "Video"
-								else:
-									media_type = "Image"
-
+			else:
+				if tweet.entities['urls']:
+					media = str(tweet.entities['urls'][0]['expanded_url'])
+					if media.find("instagram") > 0:
+						# Instagram
+						try:
+							response = urllib2.urlopen(str(media))
+							html = response.read()
+							media_url = get_url_media_from_instagram(html)
+							media = 1
+							if media_url.find(".mp4") > 0:
+								media_type = "Video"
 							else:
-								media_url = ""
-		
+								media_type = "Image"
+						except Exception as e:
+							pass
+					else:
+						if media.find("swarmapp") > 0:
+							# Foursquare
+							media_url, owner, profile_image = get_url_media_from_foursquare(media)
+							media = 1
+							if media_url.find(".mp4") > 0:
+								media_type = "Video"
+							else:
+								media_type = "Image"
+						else:
+							media_url = ""
 
-			if hasattr (tweet, 'retweeted_status'): 
+			if hasattr (tweet, 'retweeted_status'):
 				screen_name = tweet.retweeted_status.author.screen_name
 				profile_image_url = tweet.retweeted_status.author.profile_image_url.replace("_normal.", ".")
 				#profile_image_url = tweet.retweeted_status.author.profile_image_url
 				location = tweet.retweeted_status.author.location
 				name = tweet.retweeted_status.author.name
 				source_app = tweet.retweeted_status.source
-				retweeted = 1	
+				retweeted = 1
+				if tweet.retweeted_status.entities.has_key('media'):
+					media = 1
 			else:
 				screen_name = tweet.user.screen_name
 				profile_image_url = tweet.user.profile_image_url.replace("_normal.", ".")
@@ -2590,82 +2555,34 @@ class User_Tweets:
 				name = tweet.user.name
 				source_app = tweet.source
 
-			for f in text:
-				operator = ""
-				string = ""
-				to_search = re.search('\[(.*)\](.*)', f)
-				if to_search:
-					operator = str(to_search.group(1)).lower()
-					string = str(to_search.group(2)).lower()
-
-
-				if ((operator and string) or ( (operator == "+r") or (operator == "-r") or (operator == "-m") or (operator == "+m") or (operator == "-s") or (operator == "+s") )):
-					# operator: [+]contain [-]not_contain [+r]retweeted [-r]not_retweeted [+m]contain_media [-m]not_contain_media [+s]tweet_from_app [-s]tweet_not_from_app
-
-					if operator == "-":
-						# Not contain this word
-						if string in tweet.text.lower():
-							add = 0
-					elif operator == "+":
-						# Contain this word
-						if string not in tweet.text.lower() and add:
-							add = 0
-					elif operator == "-r":
-						# Not retweeted
-						if retweeted:
-							add = 0
-					elif operator == "+r":
-						# Retweeted
-						if not retweeted:
-							add = 0
-					elif operator == "-m":
-						# Not contain media
-						if media:
-							add = 0
-					elif operator == "+m":
-						# Contain media
-						if not media:
-							add = 0
-					elif operator == "-s":
-						# Tweet not from this app source
-						if string.lower() in source_app.lower():
-							add = 0
-					elif operator == "+s":
-						# Tweet from this app source
-						if string.lower() not in source_app.lower():
-							add = 0
-
-				else:
-					add = 0
-			
-			if add:
-				self.tweets_find.append([tweet.text, tweet.created_at.strftime('%m/%d/%Y'), tweet.created_at.time(), tweet.id, screen_name, profile_image_url, location, name, media_url, media_type])
-
-			return add
+			self.tweets_find.append([tweet.text, tweet.created_at.strftime('%m/%d/%Y'), tweet.created_at.time(), tweet.id, screen_name, profile_image_url, location, name, media_url, media_type])
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class Words_Tweets:
 	""" Handle words in tweets """
-	
-	top_words = {} # Most used words
-	ordered_words = {}
-	top_dates = {} 
-	total_occurrences = 0
-	
 
 	# ----------------------------------------------------------------------
-	def set_words_information(self, top, tweet):
+	def __init__(self):
 		try:
 
-			if not hasattr (tweet, 'retweeted_status'): 
+			self.top_words = {}  # Most used words
+			self.ordered_words = {}
+			self.top_dates = {}
+			self.total_occurrences = 0
 
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+	# ----------------------------------------------------------------------
+	def set_words_information(self, tweet):
+		try:
+
+			if not hasattr (tweet, 'retweeted_status'):
 				# Identify words in a tweet
-
 				english_words = ['a', 'about', 'above', 'across', 'after', 'afterwards']
 				english_words += ['again', 'against', 'all', 'almost', 'alone', 'along']
 				english_words += ['already', 'also', 'although', 'always', 'am', 'among']
@@ -2751,18 +2668,24 @@ class Words_Tweets:
 						# First occurrence
 						self.top_words[word] = freq
 						self.top_dates[word] = [tweet.created_at, tweet.created_at]
-			
+
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 #==========================================================================
 class Favorites:
 	""" Handle favorite tweets """
-	
-	favorites_tweets = []
-	
+
+	# ----------------------------------------------------------------------
+	def __init__(self):
+		try:
+
+			self.favorites_tweets = []
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
 	# ----------------------------------------------------------------------
 	def set_favorites_information(self, api, username, total_favs):
 		try:
@@ -2780,8 +2703,6 @@ class Favorites:
 							if favorites_count > total_favs:
 								end = 1
 							else:
-								sys.stdout.write("\r\t\t" + str(favorites_count) + "/" + str(total_favs) + " tweets analyzed")
-								sys.stdout.flush()
 								tweet_date = tweet.created_at.strftime('%m/%d/%Y')
 								tweet_time = tweet.created_at.time()
 								media_url=""
@@ -2798,24 +2719,27 @@ class Favorites:
 				except Exception, e:
 					rate_limit = show_error(e)
 					if rate_limit:
-						print "\t\tWaiting..."
+						show_ui_message("Waiting...", "INFO", br=1)
 						time.sleep(60)
 						continue
-				
-		except Exception, e:
-			show_error(e)
-			sys.exit(1)
 
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class User_Conversations:
 	""" Show conversations between two users """
-	
-	conversations = {} # {'tweet1_id1': '[[tweet1], [tweet2], ..., [tweet_n]], 'tweet2_id2': '[[tweet1], [tweet2], ..., [tweet_n]], ...}
-	processed_tweets = []
 
+	# ----------------------------------------------------------------------
+	def __init__(self):
+		try:
 
+			self.conversations = {}  # {'tweet1_id1': '[[tweet1], [tweet2], ..., [tweet_n]], 'tweet2_id2': '[[tweet1], [tweet2], ..., [tweet_n]], ...}
+			self.processed_tweets = []
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def make_tweet_to_append(self, tweet, position):
@@ -2835,17 +2759,15 @@ class User_Conversations:
 			return tweet_to_append
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
-	def set_tweets_conversations(self, parameters, tweet):
+	def set_tweets_conversations(self, tweet):
 		try:
-			
+
 			add_tweet_conversation = 1
 			conversation_id = 0
-								
+
 			while add_tweet_conversation > 0:
 				if tweet.id not in self.processed_tweets:
 					self.processed_tweets.append(tweet.id)
@@ -2857,7 +2779,7 @@ class User_Conversations:
 							if conversation_id == 0:
 								conversation_id = tweet.in_reply_to_status_id
 
-							tweet_in_reply = parameters.api.get_status(tweet.in_reply_to_status_id)
+							tweet_in_reply = api.get_status(tweet.in_reply_to_status_id)
 
 							tweet_to_append_in_reply = self.make_tweet_to_append(tweet_in_reply, "")
 							tweet_to_append_reply = self.make_tweet_to_append(tweet, "")
@@ -2876,7 +2798,7 @@ class User_Conversations:
 										break
 							else:
 								self.conversations[conversation_id] = [conversation_to_append]
-							
+
 							conversation_to_append = tweet_to_append_reply
 							self.conversations[conversation_id].append(conversation_to_append)
 
@@ -2888,13 +2810,13 @@ class User_Conversations:
 							search_until = tmp.strftime('%Y-%m-%d')
 
 							# Find others replies
-							for status in tweepy.Cursor(parameters.api.search,
-								q="@" + search_user_screen_name,
-								since_id=search_tweet_id,
-								count=100,
-								since=search_since,
-								until=search_until,
-								result_type='recent').items():			
+							for status in tweepy.Cursor(api.search,
+														q="@" + search_user_screen_name,
+														since_id=search_tweet_id,
+														count=100,
+														since=search_since,
+														until=search_until,
+														result_type='recent').items():
 
 								if status.in_reply_to_status_id == search_tweet_id:
 									tweet_to_append = self.make_tweet_to_append(status, "")
@@ -2912,23 +2834,34 @@ class User_Conversations:
 					add_tweet_conversation = 0
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e), "ERROR", br=1)
 
 
 # ==========================================================================
 class User_Relations:
 	""" Show relations from protected profiles """
-	followedby_users = [] # Followers
-	following_users = [] # Friends
-	protected_tweets = [] # Tweets
 
 	# ----------------------------------------------------------------------
-	def set_relations(self, parameters):
+	def __init__(self):
 		try:
-			sys.stdout.write("\n\r\t\tIdentifying relations...\n")
-			api = parameters.api
-			url = "https://mobile.twitter.com/search?f=tweets&q=to:" + parameters.username
+
+			self.followedby_users = []  # Followers
+			self.following_users = []  # Friends
+			self.protected_tweets = []  # Tweets
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+	# ----------------------------------------------------------------------
+	def set_relations(self, username):
+		try:
+
+			show_ui_message("Identifying relations...", "INFO", 1)
+
+			self.followedby_users = []  # Followers
+			self.following_users = []  # Friends
+			self.protected_tweets = []  # Tweets
+			url = "https://mobile.twitter.com/search?f=tweets&q=to:" + username
 
 			response = urllib2.urlopen(url)
 			html = response.read()
@@ -2940,24 +2873,21 @@ class User_Relations:
 			status = []
 
 			if html:
-
 				screenname = re.findall('<a href="/(.*)\?p=s">', html)
 				status = re.findall('<a name="tweet_(.*)" href=', html)
-
 				screenname = list(set(screenname))
-
 				n = 0
 				followedby_count = 0
 				following_count = 0
 				for sname in screenname:
-					if not (sname.lower() in parameters.username.lower()):
+					if not (sname.lower() in username.lower()):
 						try:
-							b = api.show_friendship(source_screen_name=parameters.username, target_screen_name=sname)
+							b = api.show_friendship(source_screen_name=username, target_screen_name=sname)
 							if b[1].followed_by:
 								followed.append(sname)
 								followedby_count += 1
 								followedby_user = User()
-								api_followedby = parameters.api.get_user(sname)
+								api_followedby = api.get_user(sname)
 								followedby_user.set_user_information(api_followedby)
 								self.followedby_users.append(followedby_user)
 
@@ -2965,7 +2895,7 @@ class User_Relations:
 								following.append(sname)
 								following_count += 1
 								following_user = User()
-								api_following = parameters.api.get_user(sname)
+								api_following = api.get_user(sname)
 								following_user.set_user_information(api_following)
 								self.following_users.append(following_user)
 
@@ -2973,17 +2903,25 @@ class User_Relations:
 							pass
 
 					n+=1
-					sys.stdout.write("\r\t\t" + str(n) + " identified relations. Followed by: " + str(followedby_count) + " users. Following: " + str(following_count) + " users")
-					sys.stdout.flush()
+					show_ui_message(str(n) + " identified relations. Followed by: " + str(followedby_count) + " users. Following: " + str(following_count) + " users", "INFO", 0)
+
+					cursor = ui.tb_messages.textCursor()
+					cursor.movePosition(QtGui.QTextCursor.StartOfLine, 0)
+					cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
+					cursor.removeSelectedText()
 
 				n = 0
-				sys.stdout.write("\n")
+
 				for content in status:
 					try:
 
 						n += 1
-						sys.stdout.write("\r\t\t" + str(n) + " identified tweets. Followed by: " + str(followedby_count) + " users. Following: " + str(following_count) + " users")
-						sys.stdout.flush()
+						show_ui_message(str(n) + " identified tweets. Followed by: " + str(followedby_count) + " users. Following: " + str(following_count) + " users", "INFO", 0)
+
+						cursor = ui.tb_messages.textCursor()
+						cursor.movePosition(QtGui.QTextCursor.StartOfLine, 0)
+						cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
+						cursor.removeSelectedText()
 
 						tweet = api.get_status(content)
 						self.protected_tweets.append(tweet)
@@ -2994,14 +2932,14 @@ class User_Relations:
 
 						for i in tweet.entities['user_mentions']:
 
-							if i['screen_name'] and (i['screen_name'].lower() not in parameters.username.lower()) and (i['screen_name'].lower() not in str(mentions).lower()):
+							if i['screen_name'] and (i['screen_name'].lower() not in username.lower()) and (i['screen_name'].lower() not in str(mentions).lower()):
 								mentions.append(str(i['screen_name']))
-								b = api.show_friendship(source_screen_name=parameters.username, target_screen_name=i['screen_name'])
+								b = api.show_friendship(source_screen_name=username, target_screen_name=i['screen_name'])
 								if b[1].followed_by:
 									followed.append(str(i['screen_name']))
 									followedby_count += 1
 									followedby_user = User()
-									api_followedby = parameters.api.get_user(str(i['screen_name']))
+									api_followedby = api.get_user(str(i['screen_name']))
 									followedby_user.set_user_information(api_followedby)
 									self.followedby_users.append(followedby_user)
 
@@ -3009,117 +2947,126 @@ class User_Relations:
 									following.append(str(i['screen_name']))
 									following_count += 1
 									following_user = User()
-									api_following = parameters.api.get_user(str(i['screen_name']))
+									api_following = api.get_user(str(i['screen_name']))
 									following_user.set_user_information(api_following)
 									self.following_users.append(following_user)
 
 					except Exception, e:
 						pass
 
-				sys.stdout.write("\n")
-
 				for sname in followed:
-					if not (sname.lower() in parameters.username.lower()) and (sname not in following):
+					if not (sname.lower() in username.lower()) and (sname not in following):
 						try:
-							b = api.show_friendship(source_screen_name=parameters.username, target_screen_name=sname)
+							b = api.show_friendship(source_screen_name=username, target_screen_name=sname)
 							if b[1].following:
 								following.append(sname)
 								following_count += 1
 								following_user = User()
-								api_following = parameters.api.get_user(sname)
+								api_following = api.get_user(sname)
 								following_user.set_user_information(api_following)
 								self.following_users.append(following_user)
 						except Exception, e:
 							pass
 
 					n+=1
-					sys.stdout.write("\r\t\tFollowed by: " + str(followedby_count) + " users. Following: " + str(following_count) + " users")
-					sys.stdout.flush()
+					show_ui_message("Followed by: " + str(followedby_count) + " users. Following: " + str(following_count) + " users", "INFO", 0)
 
-				sys.stdout.write("\n")
+					cursor = ui.tb_messages.textCursor()
+					cursor.movePosition(QtGui.QTextCursor.StartOfLine, 0)
+					cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
+					cursor.removeSelectedText()
+
 				for sname in following:
-					if not (sname.lower() in parameters.username.lower()) and (sname not in followed):
+					if not (sname.lower() in username.lower()) and (sname not in followed):
 						try:
-							b = api.show_friendship(source_screen_name=parameters.username, target_screen_name=sname)
+							b = api.show_friendship(source_screen_name=username, target_screen_name=sname)
 							if b[1].followed_by:
 								followed.append(sname)
 								followedby_count += 1
 								followedby_user = User()
-								api_followedby = parameters.api.get_user(sname)
+								api_followedby = api.get_user(sname)
 								followedby_user.set_user_information(api_followedby)
 								self.followedby_users.append(followedby_user)
 						except Exception, e:
 							pass
 
 					n+=1
-					sys.stdout.write("\r\t\tFollowed by: " + str(followedby_count) + " users. Following: " + str(following_count) + " users")
-					sys.stdout.flush()
+					show_ui_message("Followed by: " + str(followedby_count) + " users. Following: " + str(following_count) + " users", "INFO", 0)
 
-			sys.stdout.write("\n\r\t\tOK\n")
+					cursor = ui.tb_messages.textCursor()
+					cursor.movePosition(QtGui.QTextCursor.StartOfLine, 0)
+					cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
+					cursor.removeSelectedText()
+
+			show_ui_message("Relations: OK", "INFO", 1)
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
 # ==========================================================================
 class User_Images:
 	""" Handle user images and metadata information """
-	metadata = 0
-	
-	profile_image_url = ""
-	profile_banner_url = ""
-	screen_name = ""
-	
-	pic = [] 
-	pics_directory = ""
-	pics_result = 0
-	username = ""
-	images = ""
-	meta = ""
-	meta_description = {}
-	meta_copyright = {}
-	meta_date = {}
-	meta_make = {}
-	meta_model = {}
-	meta_software = {}
-	meta_distance = {}
-	meta_size = {}
-	meta_platform = {}
-	meta_iccdate = {}
-	meta_GPSLatitude = {}
-	meta_coordinates = {}
-	meta_thumb = {}
-	meta_profile_image = []
-	meta_profile_banner = []
-	
-	platforms = {
-		"APPL" : "Apple Computer Inc.", 
-		"MSFT" : "Microsoft Corporation", 
-		"SGI " : "Silicon Graphics Inc.", 
-		"SUNW" : "Sun Microsystems Inc.", 
-		"TGNT" : "Taligent Inc.",
-		}
-		
+
+	# ----------------------------------------------------------------------
+	def __init__(self):
+		try:
+
+			self.metadata = 0
+			self.profile_image_url = ""
+			self.profile_banner_url = ""
+			self.screen_name = ""
+			self.pic = []
+			self.pics_directory = ""
+			self.pics_result = 0
+			self.username = ""
+			self.images = ""
+			self.meta = ""
+			self.meta_description = {}
+			self.meta_copyright = {}
+			self.meta_date = {}
+			self.meta_make = {}
+			self.meta_model = {}
+			self.meta_software = {}
+			self.meta_distance = {}
+			self.meta_size = {}
+			self.meta_platform = {}
+			self.meta_iccdate = {}
+			self.meta_GPSLatitude = {}
+			self.meta_coordinates = {}
+			self.meta_thumb = {}
+			self.meta_profile_image = []
+			self.meta_profile_banner = []
+			self.platforms = {
+				"APPL": "Apple Computer Inc.",
+				"MSFT": "Microsoft Corporation",
+				"SGI ": "Silicon Graphics Inc.",
+				"SUNW": "Sun Microsystems Inc.",
+				"TGNT": "Taligent Inc.",
+			}
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
 	# ----------------------------------------------------------------------
 	def set_images_information(self, tweet):
 		try:
+
 			media_url = ""
 			image = ""
-			media_type = "Image" 
+			media_type = "Image"
 			in_reply_to_screen_name = ""
 
 			reply = tweet.in_reply_to_screen_name
 			if reply:
-				in_reply_to_screen_name = reply	
+				in_reply_to_screen_name = reply
 
-	
 			if tweet.entities.has_key('media') :
 				medias = tweet.entities['media']
 				for m in medias :
 					media_url = m['media_url']
 					if str(media_url).find("video") >= 0:
-						media_type = "Video" 
+						media_type = "Video"
 						videos = []
 						for content in tweet.extended_entities['media'][0]['video_info']['variants']:
 							if str(content['url']).find(".mp4") >= 0:
@@ -3130,7 +3077,7 @@ class User_Images:
 						media_url = str(vid_top[0][0])
 
 					else:
-						if self.images == "d" or self.meta:
+						if ui.cb_media_download.isChecked() or ui.cb_metadata.isChecked():
 							if not os.path.isdir(self.username):
 								os.mkdir(self.username)
 							img = urllib2.urlopen(media_url).read()
@@ -3140,7 +3087,7 @@ class User_Images:
 							if not os.path.exists(self.username+"/"+filename):
 								f = open(self.username+"/"+filename, 'wb')
 								f.write(img)
-								f.close()			
+								f.close()
 
 			else:
 				if tweet.entities['urls']:
@@ -3148,7 +3095,7 @@ class User_Images:
 					if media.find("instagram") > 0:
 						# Instagram
 						try:
-							response = urllib2.urlopen(str(media))  
+							response = urllib2.urlopen(str(media))
 							html = response.read()
 							media_url = get_url_media_from_instagram(html)
 							if media_url.find(".mp4") > 0:
@@ -3158,7 +3105,6 @@ class User_Images:
 					else:
 						media_url = ""
 
-
 			if media_url:
 				screen_name = ""
 				profile_image_url_orig = ""
@@ -3166,7 +3112,7 @@ class User_Images:
 				screen_name = tweet.user.screen_name
 				screen_name_orig = ""
 				profile_image_url = tweet.user.profile_image_url_https.replace("_normal.", ".")
-				if hasattr (tweet, 'retweeted_status'): 
+				if hasattr (tweet, 'retweeted_status'):
 					source_app = str(tweet.retweeted_status.source)
 					source_likes = str(tweet.retweeted_status.favorite_count)
 					source_rt = str(tweet.retweeted_status.retweet_count)
@@ -3176,19 +3122,17 @@ class User_Images:
 				else:
 					source_app = tweet.source
 					source_likes = str(tweet.favorite_count)
-					source_rt = str(tweet.retweet_count)			
-				
-				self.pic.append([media_url, image, str(tweet.created_at.strftime('%m/%d/%Y')), str(tweet.created_at.time()), str(tweet.id), screen_name_orig, profile_image_url_orig, str(created_at.strftime('%m/%d/%Y')), str(created_at.time()), media_type, screen_name, profile_image_url, source_app, source_rt, source_likes, in_reply_to_screen_name])
-			
-		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+					source_rt = str(tweet.retweet_count)
 
+				self.pic.append([media_url, image, str(tweet.created_at.strftime('%m/%d/%Y')), str(tweet.created_at.time()), str(tweet.id), screen_name_orig, profile_image_url_orig, str(created_at.strftime('%m/%d/%Y')), str(created_at.time()), media_type, screen_name, profile_image_url, source_app, source_rt, source_likes, in_reply_to_screen_name])
+
+		except Exception, e:
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
 	def set_metadata_information(self, tweet):
 		try:
-		
+
 			for p in self.pic:
 				path = p[1]
 				self.meta_description[p[0]] = ""
@@ -3202,12 +3146,12 @@ class User_Images:
 				self.meta_iccdate[p[0]] = ""
 				self.meta_coordinates[p[0]] = ""
 				self.meta_thumb[p[0]] = ""
-				
-				fileName, fileExtension = os.path.splitext(path)								
-					
+
+				fileName, fileExtension = os.path.splitext(path)
+
 				if os.path.exists(path):
 					img = Image.open(path)
-					if fileExtension in (".jpg", ".jpeg"):			
+					if fileExtension in (".jpg", ".jpeg"):
 						if img._getexif():
 							metadata = 1
 							exif = { ExifTags.TAGS[k]: v for k, v in img._getexif().items() if k in ExifTags.TAGS }
@@ -3218,7 +3162,7 @@ class User_Images:
 							self.meta_model[p[0]] = unicode(exif['Model'])
 							self.meta_software[p[0]] = unicode(exif['Software'])
 							self.meta_distance[p[0]] = unicode(exif['SubjectDistance'][0]/float(exif['SubjectDistance'][1])) + " meters"
-											
+
 					self.meta_size[p[0]] = str(img.size[0]) + "x" + str(img.size[1]) + " px"
 					if 'icc_profile' in img.info:
 						icc_profile = img.info.get("icc_profile")
@@ -3231,7 +3175,7 @@ class User_Images:
 							tmp_tuple = (0, 0, 0)
 							final_tuple = datetime + tmp_tuple
 							self.meta_iccdate[p[0]] = unicode(time.strftime('%Y/%m/%d %H:%M:%S', final_tuple))
-					
+
 					# Checkf for GPS information
 					try:
 						latitude = metadata.__getitem__("Exif.GPSInfo.GPSLatitude")
@@ -3254,21 +3198,20 @@ class User_Images:
 					except Exception, e:
 						# No GPS information
 						pass
-				
-		except Exception, e:
-			show_error(e)
-			sys.exit(1)
 
-			
-	# ----------------------------------------------------------------------			
+		except Exception, e:
+			show_ui_message(str(e), "ERROR", br=1)
+
+	# ----------------------------------------------------------------------
 	def get_metadata(self, filename, save, username):
 		try:
+
 			metadata = 0
 			platforms = {
-				"APPL" : "Apple Computer Inc.", 
-				"MSFT" : "Microsoft Corporation", 
-				"SGI " : "Silicon Graphics Inc.", 
-				"SUNW" : "Sun Microsystems Inc.", 
+				"APPL" : "Apple Computer Inc.",
+				"MSFT" : "Microsoft Corporation",
+				"SGI " : "Silicon Graphics Inc.",
+				"SUNW" : "Sun Microsystems Inc.",
 				"TGNT" : "Taligent Inc.",
 			}
 
@@ -3276,17 +3219,17 @@ class User_Images:
 
 			if save:
 				save_image(filename, username)
-	
+
 			pics_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + username
-	
+
 			filename = filename.split('/')[-1]
 			path = pics_directory + "/" + filename
-			fileName, fileExtension = os.path.splitext(path)					
-			
-			if os.path.exists(path):	
+			fileName, fileExtension = os.path.splitext(path)
+
+			if os.path.exists(path):
 
 				img = Image.open(path)
-				if fileExtension in (".jpg", ".jpeg"):			
+				if fileExtension in (".jpg", ".jpeg"):
 					if img._getexif():
 						metadata = 1
 						exif = { ExifTags.TAGS[k]: v for k, v in img._getexif().items() if k in ExifTags.TAGS }
@@ -3297,8 +3240,8 @@ class User_Images:
 						self.meta_profile_image.append(unicode(exif['Model']))
 						self.meta_profile_image.append(unicode(exif['Software']))
 						self.meta_profile_image.append(unicode(exif['SubjectDistance'][0]/float(exif['SubjectDistance'][1])) + " meters")
-						
-					else:	
+
+					else:
 						self.meta_profile_image.append("")
 						self.meta_profile_image.append("")
 						self.meta_profile_image.append("")
@@ -3306,7 +3249,7 @@ class User_Images:
 						self.meta_profile_image.append("")
 						self.meta_profile_image.append("")
 						self.meta_profile_image.append("")
-																								
+
 				if 'icc_profile' in img.info:
 					icc_profile = img.info.get("icc_profile")
 					if icc_profile:
@@ -3314,36 +3257,35 @@ class User_Images:
 						metadata = 1
 						if platform in ('APPL', 'MSFT', 'SGI ', 'SUNW', 'TGNT'):
 							self.meta_profile_image.append(platforms[platform])
-								
+
 						datetime = struct.unpack('>hhhhhh',icc_profile[24:36])
 						tmp_tuple = (0, 0, 0)
 						final_tuple = datetime + tmp_tuple
 						self.meta_profile_image.append(time.strftime('%Y/%m/%d %H:%M:%S', final_tuple))
 
-					
 				try:
 					latitude = metadata.__getitem__("Exif.GPSInfo.GPSLatitude")
 					latitudeRef = metadata.__getitem__("Exif.GPSInfo.GPSLatitudeRef")
 					longitude = metadata.__getitem__("Exif.GPSInfo.GPSLongitude")
 					longitudeRef = metadata.__getitem__("Exif.GPSInfo.GPSLongitudeRef")
-	
+
 					latitude = str(latitude).split("=")[1][1:-1].split(" ");
 					latitude = map(lambda f: str(float(Fraction(f))), latitude)
 					latitude = latitude[0] + u"\u00b0" + latitude[1] + "'" + latitude[2] + '"' + " " + str(latitudeRef).split("=")[1][1:-1]
-	
+
 					longitude = str(longitude).split("=")[1][1:-1].split(" ");
 					longitude = map(lambda f: str(float(Fraction(f))), longitude)
 					longitude = longitude[0] + u"\u00b0" + longitude[1] + "'" + longitude[2] + '"' + " " + str(longitudeRef).split("=")[1][1:-1]
-	
+
 					latitude_value = dms_to_decimal(*metadata.__getitem__("Exif.GPSInfo.GPSLatitude").value + [metadata.__getitem__("Exif.GPSInfo.GPSLatitudeRef").value]);
 					longitude_value = dms_to_decimal(*metadata.__getitem__("Exif.GPSInfo.GPSLongitude").value + [metadata.__getitem__("Exif.GPSInfo.GPSLongitudeRef").value]);
-	
+
 				except Exception, e:
 					pass
-		
+
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
+
 
 # ==========================================================================
 class Parameters:
@@ -3351,53 +3293,6 @@ class Parameters:
 	# ----------------------------------------------------------------------
 	def __init__(self, **kwargs):
 		try:
-			config = Configuration()
-			self.api = config.api
-			self.client = config.client
-			self.screen_name= kwargs.get("username")
-			self.tweets = kwargs.get("tweets")
-			self.sdate = kwargs.get("sdate")
-			self.edate = kwargs.get("edate")
-			self.sdate = kwargs.get("stime")
-			self.edate = kwargs.get("etime")
-			self.elapsedtime = kwargs.get("elapsedtime")
-			self.friend = kwargs.get("friend")
-			self.geo = kwargs.get("geo")
-			self.top = kwargs.get("top")
-			self.find = kwargs.get("find")
-			self.search = kwargs.get("latlonkm")
-			self.hashtags_from_username = kwargs.get("hashtags_from_username")
-			self.mentions_from_username = kwargs.get("mentions_from_username")
-			self.output = kwargs.get("output")
-			self.favorites = kwargs.get("favorites")
-			self.username = ""
-
-			self.menu_apps = 0
-			self.menu_social = 0
-			self.menu_hashtags = 0
-			self.menu_mentions = 0
-			self.menu_tweets = 0
-			self.menu_metadata = 0
-			self.menu_media = 0
-			self.menu_geolocation = 0
-			self.menu_search = 0
-
-			self.output_source = 0
-			self.output_followers = 0
-			self.output_social = 0
-			self.output_hashtag = 0
-			self.output_mention = 0
-			self.output_tweet = 0
-			self.output_metadata = 0
-			self.output_media = 0
-			self.output_geolocation = 0
-			self.output_search = 0
-			self.output_conversation = 0
-			self.output_favorites = 0
-			self.output_words = 0
-			self.output_activity = 0
-			self.output_protected= 0
-
 
 			self.program_name ="Tinfoleak"
 			self.program_version = "v2.3"
@@ -3408,50 +3303,99 @@ class Parameters:
 			self.html_output_directory = "Output_Reports"
 
 		except Exception, e:
-			show_error(e)
-			sys.exit(1)
-
-
+			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
-def is_valid(tweet, args):
+def is_valid(tweet):
 	"""Verify if a tweet meets all requirements"""
 	try:
+
 		valid = 1
-		
+		retweeted = 0
+		media = 0
+
+		# Identify RT and media content
+		if hasattr(tweet, 'retweeted_status'):
+			retweeted = 1
+			if tweet.retweeted_status.entities.has_key('media'):
+				media = 1
+
+		else:
+			retweeted = 0
+			if tweet.entities.has_key('media'):
+				media = 1
+
+		# Verify "Start date" and "End date" filter
 		date = str(tweet.created_at.strftime('%Y-%m-%d'))
+		if date < str(ui.tb_sdate.text()) or date > str(ui.tb_edate.text()):
+			valid = 0
 
-		if date < args.sdate or date > args.edate:
-			valid = 0
-		time = str(tweet.created_at.strftime('%H:%M:%S'))
-		if time< args.stime or time> args.etime:
-			valid = 0
-		
+		# Verify "Start time" and "End time" filter
+		if valid:
+			time = str(tweet.created_at.strftime('%H:%M:%S'))
+			if time < str(ui.tb_stime.text()) or time > str(ui.tb_etime.text()):
+				valid = 0
+
+		if valid:
+			# Verify "Retweet" filter
+			if retweeted and ui.rb_RT_no.isChecked():
+				valid = 0
+			if not retweeted and ui.rb_RT_yes.isChecked():
+				valid = 0
+
+		if valid:
+			# Verify "Multimedia" filter
+			if media and ui.rb_media_no.isChecked():
+				valid = 0
+			if not media and ui.rb_media_yes.isChecked():
+				valid = 0
+
+		if valid and len(ui.tb_source_app.text())>0:
+			# Verify "Source application" filter
+			source_app = str(ui.tb_source_app.text()).lower()
+			if (source_app in tweet.source.lower()) and ui.rb_sourceapp_no.isChecked():
+				valid = 0
+			if (source_app not in tweet.source.lower()) and ui.rb_sourceapp_yes.isChecked():
+				valid = 0
+
+		if valid and ui.tb_include_words.text():
+			# Verify "Include words" filter
+			with_words = str(ui.tb_include_words.text()).lower().split()
+			for word in with_words:
+				if word not in tweet.text.lower():
+					valid = 0
+					break
+
+		if valid and ui.tb_not_include_words.text():
+			# Verify "Don't include words" filter
+			without_words = str(ui.tb_not_include_words.text()).lower().split()
+			for word in without_words:
+				if word in tweet.text.lower():
+					valid = 0
+					break
+
 		return valid
-		
-	except Exception, e:
-		show_error(e)
-		sys.exit(1)
 
+	except Exception, e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
 def get_video_url(url):
 	"""Get video URL from a tweet media URL"""
 	try:
+
 		video_url = ""
-		
-		response = urllib2.urlopen(str(url))  
+		response = urllib2.urlopen(str(url))
 		html = response.read()
 		if html.find(".mp4") >= 0:
 			begin = html.index('video-src="')
 			end = html.index('.mp4"')
 			video_url = html[begin+11:end+4]
-		
+
 		return video_url
-		
+
 	except Exception, e:
-		show_error(e)
-		sys.exit(1)
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
 def getKey(item):
@@ -3464,20 +3408,19 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 
 		tinfoleak_dir = os.path.dirname(os.path.abspath(__file__))
 		jinja2_env = Environment(loader=FileSystemLoader(tinfoleak_dir), autoescape=True, trim_blocks=True)
-		
+
 		desc = user.description
 		if user.expanded_description:
 			desc = user.expanded_description
 
 		url = user.url
 		if user.expanded_url and len(user.expanded_url) < 50:
-			url = user.expanded_url		
+			url = user.expanded_url
 
 		all_conv = {}
 		conversations_number = 0
 		conversations_users = {}
 		conversations_messages = {}
-
 
 		for tid, conv in user_conversations.conversations.items():
 			# Order conversations by datetime
@@ -3507,7 +3450,6 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 					res[index][10] = "tweeted"
 
 				if index > 0:
-						
 					size = len(res)
 					while size >= 0:
 						if n[11] == res[size-1][0]:
@@ -3524,7 +3466,7 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 				index += 1
 
 			user_conversations.conversations[tid] = res
-			
+
 			try:
 				for r in res:
 					all_conv[res[0][0]].append(r)
@@ -3532,7 +3474,6 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 				all_conv[res[0][0]] = res
 
 		user_conversations.conversations = all_conv
-
 
 		for tid, conv in user_conversations.conversations.items():
 			conversations_number += 1
@@ -3552,27 +3493,27 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 					tmplist.append(n[0])
 					res.append(n)
 
-				value = [n[4], n[7]] 
-				if value not in users:					
+				value = [n[4], n[7]]
+				if value not in users:
 					users.append(value)
 
 				index += 1
 
-			conversations_users[tid] = users 
+			conversations_users[tid] = users
 			conversations_messages[tid] = len(conv)
 			user_conversations.conversations[tid] = res
-				
+
 		template_values = {
-			'program': parameters.program_name, 
+			'program': parameters.program_name,
 			'version': parameters.program_version,
 			'author_name': parameters.program_author_name,
 			'author_twitter': parameters.program_author_twitter,
 			'author_company': parameters.program_author_companyname,
 			'profile_image': user.profile_image_url.replace("_normal.", "."),
 			'screen_name': user.screen_name,
-			'user_name': user.name, 
+			'user_name': user.name,
 			'twitter_id': user.id,
-			'date': user.created_at.strftime('%m/%d/%Y'), 
+			'date': user.created_at.strftime('%m/%d/%Y'),
 			'followers': '{:,}'.format(user.followers_count),
 			'friends': '{:,}'.format(user.friends_count),
 			'geo': user.geo_enabled,
@@ -3592,9 +3533,9 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 			'argv': str(sys.argv),
 			'os_name': os.name,
 			'os_platform': sys.platform,
-			
+
 			# source
-			'output_source': parameters.output_source,
+			'output_source': (ui.cb_source_apps.isChecked() and ui.cb_source_apps.isEnabled()),
 			'source': source.sources,
 			'sources_count': source.sources_count,
 			'sources_percent': source.sources_percent,
@@ -3604,14 +3545,13 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 			'sources_firsttweet': source.sources_firsttweet,
 			'sources_lasttweet': source.sources_lasttweet,
 
-			# social
-			'output_social': parameters.output_social,
-			'menu_social': parameters.menu_social,
+			# social networks
+			'output_social': (ui.cb_social_networks.isChecked() and ui.cb_social_networks.isEnabled()),
 			'social_tweet': social.user_sn,
 			'social_results': len(social.user_sn),
-			
+
 			# hashtag
-			'output_hashtag': parameters.output_hashtag,
+			'output_hashtag': (ui.cb_hashtags.isChecked() and ui.cb_hashtags.isEnabled()),
 			'hashtags_tweet': hashtag.hashtags_tweet,
 			'hashtags_results1': hashtag.hashtags_results1,
 			'hashtags_results2': hashtag.hashtags_results2,
@@ -3627,7 +3567,7 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 			'hashtags_users': hashtag.hashtags_users,
 
 			# mention
-			'output_mention': parameters.output_mention,
+			'output_mention': (ui.cb_mentions.isChecked() and ui.cb_mentions.isEnabled()),
 			'mentions_tweet': mention.mentions_tweet,
 			'mentions_results1': len(mention.mentions_tweet),
 			'mentions_results2': len(mention.mentions_count),
@@ -3642,21 +3582,21 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 			'mentions_top': mention.mentions_top,
 			'mentions_users': mention.mentions_users,
 			'mentions_profileimg': mention.mentions_profileimg,
-			
-			# find text 
-			'output_tweet': parameters.output_tweet,
-			'find': user_tweets.find_text,
+
+			# find text
+			'output_tweet': (ui.cb_show_tweets.isChecked() and ui.cb_show_tweets.isEnabled()),
+			'find': "",
 			'tweet_find': user_tweets.tweets_find,
 			'find_count': len(user_tweets.tweets_find),
 
 			# media
-			'output_media': parameters.output_media,
+			'output_media': (ui.cb_media.isChecked() and ui.cb_media.isEnabled()),
 			'media': user_images.pic,
 			'media_directory': user_images.pics_directory,
 			'media_count': len(user_images.pic),
-			
+
 			#meta
-			'output_metadata': parameters.output_metadata,
+			'output_metadata': (ui.cb_metadata.isChecked() and ui.cb_metadata.isEnabled()),
 			'meta_size': user_images.meta_size,
 			'meta_description': user_images.meta_description,
 			'meta_copyright': user_images.meta_copyright,
@@ -3673,29 +3613,29 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 			'meta_profile_banner': user_images.meta_profile_banner,
 			'meta_profile_image_url': user_images.profile_image_url,
 			'meta_profile_banner_url': user_images.profile_banner_url,
-			
+
 			# geolocation
-			'output_geolocation': parameters.output_geolocation,
+			'output_geolocation': (ui.cb_visited_locations.isChecked() and ui.cb_visited_locations.isEnabled()),
 			'geo_info': geolocation.geo_info,
 			'geo_count': len(geolocation.geo_info),
-			'geo_media': geolocation.media_info,			
+			'geo_media': geolocation.media_info,
 			'geo_info_count': len(geolocation.geo_info),
 			'geo_visited_locations': geolocation.visited_locations,
-			'geo_visited_locations_count': len(geolocation.visited_locations),	
-			'geo_toplocations_tweets': geolocation.toplocations_tweets,	
+			'geo_visited_locations_count': len(geolocation.visited_locations),
+			'geo_toplocations_tweets': geolocation.toplocations_tweets,
 			'geo_toplocations': geolocation.toploc,
 			'geo_toplocations_count': len(geolocation.toploc),
-			'geo_toplocationsdaysmo': geolocation.toplocationsdaysmo, 
-			'geo_toplocationsdaystu': geolocation.toplocationsdaystu, 
-			'geo_toplocationsdayswe': geolocation.toplocationsdayswe, 
-			'geo_toplocationsdaysth': geolocation.toplocationsdaysth, 
-			'geo_toplocationsdaysfr': geolocation.toplocationsdaysfr, 
-			'geo_toplocationsdayssa': geolocation.toplocationsdayssa, 
-			'geo_toplocationsdayssu': geolocation.toplocationsdayssu, 
+			'geo_toplocationsdaysmo': geolocation.toplocationsdaysmo,
+			'geo_toplocationsdaystu': geolocation.toplocationsdaystu,
+			'geo_toplocationsdayswe': geolocation.toplocationsdayswe,
+			'geo_toplocationsdaysth': geolocation.toplocationsdaysth,
+			'geo_toplocationsdaysfr': geolocation.toplocationsdaysfr,
+			'geo_toplocationsdayssa': geolocation.toplocationsdayssa,
+			'geo_toplocationsdayssu': geolocation.toplocationsdayssu,
 
 			# advanced search
-			'output_search': parameters.output_search,
-			'output_search_nocoord': parameters.search,
+			'output_search': ui.rb_place.isChecked(),
+			'output_search_nocoord': ui.rb_global_timeline.isChecked(),
 			'adv_geo_info': search.adv_geo_info,
 			'adv_geo_count': len(search.adv_geo_info),
 			'adv_geo_media': search.adv_media_info,
@@ -3707,28 +3647,30 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 			'user_keywords': search.user_keywords,
 
 			# conversations
-			'output_conversation': parameters.output_conversation,
+			'output_conversation': (ui.cb_conversations.isChecked() and ui.cb_conversations.isEnabled()),
 			'conversations': user_conversations.conversations.items(),
 			'conversations_number': conversations_number,
 			'conversations_users': conversations_users,
 			'conversations_messages': conversations_messages,
 
 			# favorites
-			'output_favorites': parameters.output_favorites,
+			'output_favorites': (ui.cb_likes.isChecked() and ui.cb_likes.isEnabled()),
 			'favourites_tweets': favorites.favorites_tweets,
 			'fav_count': len(favorites.favorites_tweets),
 
 			# top words
-			'output_words': parameters.output_words,
+			'output_words': (ui.cb_words_frequency.isChecked() and ui.cb_words_frequency.isEnabled()),
 			'top_words': top_words.ordered_words,
 			'top_dates': top_words.top_dates,
 			'total_occurrences': top_words.total_occurrences,
 			'words_count': len(top_words.ordered_words),
 
 			# activity
-			'output_activity': parameters.output_activity,
+			'output_activity': (ui.cb_activity.isChecked() and ui.cb_activity.isEnabled()),
 			'activity_count': activity.activity_count,
 			'activity_tweet': activity.activity_tweet,
+			'activity_tweet_retweets': activity.activity_tweet_retweets,
+			'activity_tweet_likes': activity.activity_tweet_likes,
 			'activity_retweet': activity.activity_retweet,
 			'activity_reply': activity.activity_reply,
 			'activity_url': activity.activity_url,
@@ -3738,9 +3680,11 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 			'activity_retweet_percent': activity.activity_retweet_percent,
 			'activity_url_percent': activity.activity_url_percent,
 			'activity_media_percent': activity.activity_media_percent,
+			'activity_expanded_url': activity.activity_expanded_url,
+			'activity_expanded_url_count': len(activity.activity_expanded_url),
 
 			# protected account
-			'output_protected': parameters.output_protected,
+			'output_protected': (ui.cb_protected_account.isChecked() and ui.cb_protected_account.isEnabled()),
 			'followedby_users': user_relations.followedby_users,
 			'followedby_count': len(user_relations.followedby_users),
 			'following_users': user_relations.following_users,
@@ -3749,28 +3693,29 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 			'protected_tweets_count': len(user_relations.protected_tweets)
 
 		}
-		
+
 		html_content = jinja2_env.get_template('ReportTemplate/tinfoleak-theme.html').render(template_values)
 
 		if not os.path.exists(parameters.html_output_directory) :
 			os.makedirs(parameters.html_output_directory)
 
-		f = open(parameters.html_output_directory + "/" + parameters.output, "w")
+		output_report_filename = parameters.html_output_directory + "/" + ui.tb_report_filename.text()
+		if os.path.exists(output_report_filename):
+			os.remove(output_report_filename)
+		f = open(output_report_filename, "w")
 		f.write(html_content.encode('utf-8'))
 		f.close()
-		
+
 	except Exception, e:
-		show_error(e)
-		sys.exit(1)
-
-
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
 def save_image(url, username):
 	try:
+
 		if not os.path.isdir(username):
 			os.mkdir(username)
-		
+
 		img = urllib2.urlopen(url).read()
 		filename = url.split('/')[-1]
 		pics_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + username
@@ -3779,15 +3724,12 @@ def save_image(url, username):
 			f = open(username+"/"+filename, 'wb')
 			f.write(img)
 			f.close()
-					
-	except Exception, e:
-		show_error(e)
-		sys.exit(1)
 
+	except Exception, e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
-def get_information(args, parameters):
-	"""Get information about a Twitter user"""
+def get_information_for_user_target():
 	try:
 
 		source = Sources()
@@ -3796,7 +3738,7 @@ def get_information(args, parameters):
 		user_images = User_Images()
 		geolocation = Geolocation()
 		user = User()
-		search = Search_GeoTweets()	
+		search = Search_GeoTweets()
 		user_tweets = User_Tweets()
 		user_conversations = User_Conversations()
 		user_relations = User_Relations()
@@ -3807,14 +3749,23 @@ def get_information(args, parameters):
 		collections = Collections()
 		favorites = Favorites()
 		top_words = Words_Tweets()
-		activity = Activity()	
-		user.meta = args.meta
-		analyze_tweet = 1
+		activity = Activity()
 
-		
-		#: [username, link, picture, name, info] 
-		social_networks.user_sn[args.username] = \
-			[["", "", "", "", ""], # Instagram 
+		#  Get information about a USER
+		username = str(ui.tb_username.text())
+		tweets_number = int(ui.tb_tweets_number.text())
+		show_ui_message("Looking info for <b>@" + username + "</b>:", "INFO", 1)
+		show_ui_message("Getting account information...", "INFO", 1)
+		userapi = api.get_user(username)
+		user.set_user_information(userapi)
+
+		user_conversations.conversations = {}
+		user_images.pic = []
+		#: [username, link, picture, name, info]
+		social_networks.user_sn = {}
+
+		social_networks.user_sn[username] = \
+			[["", "", "", "", ""], # Instagram
 			 ["", "", "", "", ""], # Foursquare
 			 ["", "", "", "", ""], # Facebook
 			 ["", "", "", "", ""], # LinkedIn
@@ -3826,230 +3777,528 @@ def get_information(args, parameters):
 			 ["", "", "", "", ""], # Youtube
 			 ["", "", "", "", ""], # Google+
 			 ["", "", "", "", ""]] # Frontback
-		
-		if not args.username and not args.latlonkm and not args.global_timeline:
-			print "\tYou need to specify the target of analysis: 1) a user, 2) a place or 3) the global timeline."
-			print "\t\t1) To obtain information about a user, yo need to specify an USERNAME (-u, --user parameter).\n\t\t   Examples:"
-			print "\t\t\t./tinfoleak.py -u jack -is --hashtags --mentions --media -t 400 --stime 08:00:00 --etime 20:30:00"
-			print "\t\t\t./tinfoleak.py --user stevewoz -i -s --social --top 10 -t 600 -a -o stevewoz-report.html"
-			print "\n\t\t2) To obtain information about a place, yo need to specify a LATLONKM (-p, --place parameter).\n\t\t   Examples:"
-			print "\t\t\t./tinfoleak.py -p 41.4036339,2.1721671,1km -s --media --find '[+]barcelona [+m]' -t 20"
-			print "\t\t\t./tinfoleak.py --place 41.4036339,2.1721671,0.5km --hashtags --mentions -t 20"
-			print "\n\t\t3) To obtain information about the global timeline, yo need to specify -g, --global parameter.\n\t\t   Examples:"
-			print "\t\t\t./tinfoleak.py -g --media --find '[+]happy [-r]' -t 800"
-			print "\t\t\t./tinfoleak.py --global -s --hashtags --mentions -t 600"
-			print "\n\tExecute './tinfoleak.py -h' to see the available options."
-		else:
-			if args.username:		
-				# Search info about a USER						
-				print "\tLooking info for @"  + args.username + ":\n"
-				
-				if not args.information and not args.file and not args.number and not args.d and not args.sources and not args.hashtags_from_username and not args.mentions_from_username and not args.text and not args.meta and not args.conv and not args.socialnetworks and not args.followers_number and not args.friends_number and not args.lists and not args.collections and not args.likes_number and not args.words_number and not args.protected:
-					print "\tYou need to specify an operation. Execute './tinfoleak.py -h' to see the available operations."
-				else:
-					print "\n\t\tGetting account information..."
-					api = parameters.api.get_user(args.username)
-					user.set_user_information(api)
-					print "\t\tOK"
 
-					if args.sources or args.hashtags_from_username or args.mentions_from_username or args.d or args.file or args.number or args.text or args.meta or args.conv or args.socialnetworks or args.words_number:
-						page = 1
-						tweets_count = 0	
-						print "\n\t\tExecuting operations..."
+		img_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + user.screen_name
+		if not os.path.isdir(img_directory):
+			os.mkdir(img_directory)
+		try:
+			img = urllib2.urlopen(user.profile_image_url.replace("_normal.", ".")).read()
+		except:
+			img = urllib2.urlopen(user.profile_image_url.replace(".jpg", "_400x400.jpg")).read()
+		filename = str(user.id) + ".jpg"
+		imgFile = img_directory + "/" + filename
+		if not os.path.exists(imgFile):
+			f = open(imgFile, 'wb')
+			f.write(img)
+			f.close()
 
-						while True:
-							timeline = parameters.api.user_timeline(screen_name=args.username, include_rts=True, count=args.tweets_number, page=page)
-						
-							if timeline:
-								for tweet in timeline:
-									tweets_count += 1
-									if is_valid(tweet, args):
-										if args.sources:
-											# Get information about the sources applications used to publish tweets
-											source.set_sources_information(tweet)
-										if args.hashtags_from_username:
-											# Get hashtags included in tweets
-											hashtag.set_hashtags_information(tweet, args.hashtags_from_username)
-										if args.mentions_from_username:
-											# Get mentions included in tweets
-											mentions.set_mentions_information(tweet, args.mentions_from_username)
-										if args.d:
-											# Get images included in tweets
-											user_images.username = args.username
-											user_images.images = args.d
-											user_images.meta = args.meta
-											user_images.set_images_information(tweet)
-										if args.socialnetworks:
-											parameters.menu_social = 1
-											# Identify social networks identities
-											social_networks.set_social_networks(tweet)
-										if args.meta:
-											# Get metadata information from user images
-											user_images.set_metadata_information(tweet)
-										if args.file or args.number:
-											# Get geolocation information from user tweets
-											geolocation.set_geolocation_information(tweet)
-											geolocation.set_geofile_information(tweet, user)
-										if args.text:
-											# Search text in tweets
-											l = args.text.split()
-											user_tweets.find_text = l
-											analyze_tweet = user_tweets.set_find_information(l, tweet)
-										if args.conv:
-											# Get conversations between two users
-											user_conversations.set_tweets_conversations(parameters, tweet)
-										if args.words_number and analyze_tweet:
-											# Get words most used
-											top_words.set_words_information(args.words_number, tweet)
-										if args.activity:
-											# Get statistics
-											activity.set_activity(tweet)
-				
-									sys.stdout.write("\r\t\t" + str(tweets_count) + " tweets analyzed")
-									sys.stdout.flush()										
-									if tweets_count >= int(args.tweets_number):
-										break
-							else:
-								break
-							page += 1
-							if tweets_count >= int(args.tweets_number):
-								print
-								break
+		datenow, timenow = show_ui_message("<img src=" + imgFile + " height=60 align=middle>", "INFO", 1)
+		show_ui_message("Account information: OK", "INFO", 1)
+		show_ui_message("Executing operations...", "INFO", 1)
 
-						if args.meta: 
-							user_images.profile_image_url = user.profile_image_url
-							user_images.profile_banner_url = user.profile_banner_url
-							user_images.screen_name = user.screen_name
-														
-							tmp_profile_image_url = user.profile_image_url
-							if user.profile_image_url.find("_normal") < 0:
-								tmp_profile_image_url = user.profile_image_url.replace(".jpg", "_400x400.jpg")
-							else:
-								tmp_profile_image_url = user.profile_image_url.replace("_normal.", ".")
+		# Latest targets analyzed
+		try:
+			pixmap = QtGui.QPixmap(imgFile)
+			icon_button_profile_image = QtGui.QToolButton(parent=window)
+			icon_button_profile_image.setIcon(QtGui.QIcon(pixmap))
+			icon_button_profile_image.setIconSize(QtCore.QSize(60, 60))
+			icon_button_profile_image.setAutoRaise(True)
 
-							user_images.get_metadata(tmp_profile_image_url, 1, user.screen_name)
+			ui.tbl_targets_analyzed.insertRow(0)
+			ui.tbl_targets_analyzed.setItem(0, 0, QtGui.QTableWidgetItem(datenow + " " + timenow))
+			ui.tbl_targets_analyzed.setCellWidget(0, 1, icon_button_profile_image)
+			ui.tbl_targets_analyzed.setItem(0, 2, QtGui.QTableWidgetItem("@" + user.screen_name))
+			ui.tbl_targets_analyzed.setItem(0, 3, QtGui.QTableWidgetItem(user.name.decode('utf-8')))
+			ui.tbl_targets_analyzed.resizeColumnsToContents()
+			ui.tbl_targets_analyzed.setRowHeight(0, 60)
 
-						if args.file:
-							# Show geolocation information from user tweets
-							geolocation.generates_geofile(args.file, parameters)
-					
-						print "\r\t\tOK"												
+		except Exception, e:
+			show_ui_message(str(e), "INFO", 1)
 
-					else:
-						if args.protected:
-							# Get information about protected accounts
-							user_relations.set_relations(parameters)
+		results = 0
+		# if the user select some operation
+		if ui.cb_source_apps.isChecked() or ui.cb_activity.isChecked() or ui.cb_hashtags.isChecked() or ui.cb_mentions.isChecked() or ui.cb_words_frequency.isChecked() or ui.cb_social_networks.isChecked() or ui.cb_visited_locations.isChecked() or ui.cb_metadata.isChecked() or ui.cb_media.isChecked() or ui.cb_conversations.isChecked() or ui.cb_show_tweets.isChecked():
+			page = 1
+			tweets_count = 0
+			tmp_count = 0
+			while True:
+				timeline = api.user_timeline(screen_name=username, include_rts=True, count=10, page=page)
+				if timeline:
+					for tweet in timeline:
+						tweets_count += 1
+						tmp_count += 1
+						if tweets_count == 1 or tmp_count == 10 or tweets_count == tweets_number:
+							cursor = ui.tb_messages.textCursor()
+							cursor.movePosition(QtGui.QTextCursor.StartOfLine, 0)
+							cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
+							cursor.removeSelectedText()
+							br = 0
+							if tweets_count == tweets_number:
+								br = 1
+							show_ui_message("Processing tweet " + str(tweets_count) + "/" + str(ui.tb_tweets_number.text()), "INFO", br)
+						if tmp_count == 10:
+							tmp_count = 0
+						app.processEvents()
+						if is_valid(tweet):
+							results = 1
+							if ui.cb_source_apps.isChecked():
+								# Get information about the sources applications used to publish tweets
+								source.set_sources_information(tweet)
 
+							if ui.cb_activity.isChecked():
+								# Get statistics
+								activity.set_activity(tweet)
 
-			else:
-				if args.latlonkm:
-					# Search info about a PLACE
-					print "\n\t\tExecuting operations..."
-					api = parameters.api.get_user("vaguileradiaz")
-					user.set_user_information(api)
+							if ui.cb_hashtags.isChecked():
+								# Get hashtags included in tweets
+								hashtag.set_hashtags_information(tweet, "*")
 
-					search.set_geolocation_information(parameters.api, parameters.find, parameters.search, args.tweets_number, parameters.sdate, parameters.edate, parameters.stime, parameters.etime, hashtag, mentions, social_networks, parameters, user_images, parameters.hashtags_from_username, parameters.mentions_from_username, args.words_number, args.sources, source, args.text, activity)			
-					print "\n\t\tOK"
+							if ui.cb_mentions.isChecked():
+								# Get mentionsincluded in tweets
+								mentions.set_mentions_information(tweet, "*")
+
+							if ui.cb_words_frequency.isChecked():
+								# Get words most used
+								top_words.set_words_information(tweet)
+
+							if ui.cb_social_networks.isChecked():
+								# Identify social networks identities
+								social_networks.set_social_networks(tweet)
+
+							if ui.cb_visited_locations.isChecked():
+								# Get geolocation information from user tweets
+								geolocation.set_geolocation_information(tweet)
+								if ui.tb_kml_filename.text():
+									geolocation.set_geofile_information(tweet, user)
+
+							if ui.cb_metadata.isChecked():
+								# Get metadata information from user images
+								user_images.set_metadata_information(tweet)
+
+							if ui.cb_media.isChecked():
+								# Get images included in tweets
+								if not ui.cb_metadata.isChecked():
+									user_images.set_metadata_information(tweet)
+								user_images.username = username
+								user_images.set_images_information(tweet)
+
+							if ui.cb_conversations.isChecked():
+								# Get conversations between two users
+								user_conversations.set_tweets_conversations(tweet)
+
+							if ui.cb_show_tweets.isChecked():
+								user_tweets.set_find_information(tweet)
+
+						if tweets_count >= tweets_number:
+							break
 
 				else:
-					if args.global_timeline:
-						# Search info about the global timeline
-						print "\n\t\tExecuting operations..."
-						api = parameters.api.get_user("vaguileradiaz")
-						user.set_user_information(api)
+					break
+				page += 1
+				if tweets_count >= tweets_number:
+					break
 
-						search.set_search_information(parameters.api, parameters.find, parameters.search, args.tweets_number, parameters.sdate, parameters.edate, parameters.stime, parameters.etime, hashtag, mentions, social_networks, parameters, user_images, parameters.hashtags_from_username, parameters.mentions_from_username, args.words_number, args.sources, source, args.text, activity)	
-						print "\n\t\tOK"
-					
+		parameters = Parameters()
 
-			if args.sources:
-				# Get global information about the sources applications used to publish tweets
-				source.set_global_information()
+		if results:
 
-			if args.hashtags_from_username or args.latlonkm:
-				# Get global information about hashtags included in tweets
+			if ui.cb_hashtags.isChecked():
 				hashtag.set_global_information()
 
-			if args.mentions_from_username or args.latlonkm:
-				# Get global ifnromatino about mentions included in tweets
-				mentions.set_global_information()			
+			if ui.cb_mentions.isChecked():
+				mentions.set_global_information()
 
-			if args.number:
-				# Get global ifnromatino about geolocation  in tweets
-				geolocation.set_global_information(args.number)			
+			if ui.cb_activity.isChecked():
+				# Get info about the user activity
+				show_ui_message("Getting user activity...", "INFO", br=1)
+				activity.set_global_information()
+				show_ui_message("User activity: OK", "INFO", br=1)
 
-			if args.activity:
-				# Get global information about timeline activity
-				activity.set_global_information()			
+			if ui.cb_source_apps.isChecked():
+				# Get info about the source apps
+				show_ui_message("Getting source apps...", "INFO", br=1)
+				source.set_global_information()
+				show_ui_message("Source apps: OK", "INFO", br=1)
 
-			if args.followers_number:
-				# Get followers for the specified user
-				print "\n\t\tGetting followers..."
-				followers.get_followers(args.username, parameters.api, parameters.output_followers)
+			if ui.cb_lists.isChecked():
+				# Get info about the lists the user has been added to
+				show_ui_message("Getting lists...", "INFO", br = 1)
+				lists.get_memberships(client, int(user.listed_count), username)
+				lists.get_ownerships(client, username)
+				lists.get_lists(client, username)
+				show_ui_message("Lists: OK", "INFO", br=1)
 
-			if args.friends_number:
-				# Get friends for the specified user
-				print "\n\t\tGetting friends..."
-				friends.get_friends(args.username, parameters.api, parameters.output_friends)
+			if ui.cb_collections.isChecked():
+				# Get info about the collections created by the user
+				show_ui_message("Getting collections...", "INFO", br=1)
+				collections.get_collections(client, username)
+				show_ui_message("Collections: OK", "INFO", br=1)
 
-			if args.lists:
-				# Get info about the lists the authenticated user has been added to
-				print "\n\t\tGetting lists..."
-				lists.get_memberships(parameters.client, int(user.listed_count), args.username)
-				lists.get_ownerships(parameters.client, args.username)
-				lists.get_lists(parameters.client, args.username)
-				print "\r\t\tOK"
-
-			if args.collections:
-				# Get info about the collections created by the specified user
-				print "\n\t\tGetting collections..."
-				collections.get_collections(parameters.client, args.username)
-				print "\r\t\tOK"
-
-			if args.likes_number:
-				# Get favorites tweets
-				print "\n\t\tGetting favorites..."
-				if user.favourites_count: 
-					favorites.set_favorites_information(parameters.api, args.username, int(args.likes_number))
+			if ui.cb_followers.isChecked():
+				# Get followers for the user
+				if not ui.tb_followers_number.text():
+					show_alert_field(field = ui.tb_followers_number, message = "You need to specify a followers number", type = "WARNING", br = 1)
 				else:
-					print "The user has not marked favorite tweets"
-				print "\n\r\t\tOK"
+					show_ui_message("Getting followers...", "INFO", br=1)
+					followers.get_followers(username, api, int(ui.tb_followers_number.text()))
+					show_ui_message("Followers: OK", "INFO", br=1)
 
-			if args.words_number:
-								
-				wordlist = sorted(top_words.top_words.items(), key=operator.itemgetter(1))
-				wordlist.reverse()
-
-				max = int(args.words_number)
-				if max > len(wordlist) - 1:
-					max = len(wordlist) - 1
-
-				top_words.ordered_words = wordlist[0:max]
-
-				for n in top_words.ordered_words:
-					top_words.total_occurrences += n[1]
-			
-
-			if args.latlonkm or args.information or args.global_timeline or args.file or args.number or args.d or args.sources or args.hashtags_from_username or args.mentions_from_username or args.text or args.meta or args.conv or args.socialnetworks or args.likes_number or args.words_number or args.protected:
-				print "\n\t\tGenerating report..."
-				generates_HTML_file(parameters, user, source, social_networks, hashtag, mentions, geolocation, user_images, user_tweets, search, user_conversations, favorites, top_words, activity, user_relations)
-				if os.name == "nt":
-					html_dir = os.path.dirname(os.path.abspath(__file__)) + "\\" + parameters.html_output_directory + "\\" + str(parameters.output)
+			if ui.cb_friends.isChecked():
+				# Get friends for the user
+				if not ui.tb_friends_number.text():
+					show_alert_field(field = ui.tb_friends_number, message = "You need to specify a friends number", type = "WARNING", br = 1)
 				else:
-					html_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + parameters.html_output_directory + "/" + str(parameters.output)
-				print "\t\tOK"
-				print "\n\n\tYour HTML report: " + html_dir 
-				
-	
+					show_ui_message("Getting friends...", "INFO", br=1)
+					friends.get_friends(username, api, int(ui.tb_friends_number.text()))
+					show_ui_message("Friends: OK", "INFO", br=1)
+
+			if ui.cb_words_frequency.isChecked():
+				# Get words most used
+				if not ui.tb_words_frequency_number.text():
+					show_alert_field(field=ui.tb_words_frequency_number, message="You need to specify a words number", type="WARNING", br=1)
+				else:
+					show_ui_message("Getting words...", "INFO", br=1)
+					wordlist = sorted(top_words.top_words.items(), key=operator.itemgetter(1))
+					wordlist.reverse()
+					max = int(ui.tb_words_frequency_number.text())
+					if max > len(wordlist) - 1:
+						max = len(wordlist) - 1
+					top_words.ordered_words = wordlist[0:max]
+					for n in top_words.ordered_words:
+						top_words.total_occurrences += n[1]
+					show_ui_message("Words: OK", "INFO", br=1)
+
+			if ui.cb_visited_locations.isChecked():
+				# Generates file with geolocation information from user tweets
+				if ui.tb_kml_filename.text():
+					show_ui_message("Generating KML file...", "INFO", br=1)
+					geolocation.generates_geofile(ui.tb_kml_filename.text(), parameters)
+					show_ui_message("KML file: OK", "INFO", br=1)
+
+				# Get global information about geolocation in tweets
+				if not ui.tb_top_locations.text():
+					show_alert_field(field=ui.tb_top_locations, message="You need to specify a locations number", type="WARNING", br=1)
+				else:
+					show_ui_message("Getting most visited locations...", "INFO", br=1)
+					geolocation.set_global_information(int(ui.tb_top_locations.text()))
+					show_ui_message("Most visited locations: OK", "INFO", br=1)
+
+			if ui.cb_protected_account.isChecked():
+				# Get information about protected accounts
+				show_ui_message("Getting info from protected account...", "INFO", br=1)
+				user_relations.set_relations(username)
+				show_ui_message("Info from protected account: OK", "INFO", br=1)
+
+			if ui.cb_metadata.isChecked():
+				user_images.profile_image_url = user.profile_image_url
+				user_images.profile_banner_url = user.profile_banner_url
+				user_images.screen_name = username
+
+				tmp_profile_image_url = user.profile_image_url
+				if user.profile_image_url.find("_normal") < 0:
+					tmp_profile_image_url = user.profile_image_url.replace(".jpg", "_400x400.jpg")
+				else:
+					tmp_profile_image_url = user.profile_image_url.replace("_normal.", ".")
+
+				user_images.get_metadata(tmp_profile_image_url, 1, username)
+
+		if ui.cb_likes.isChecked():
+			# Get favorites tweets
+			if user.favourites_count:
+				if not ui.tb_likes_number.text():
+					show_alert_field(field=ui.tb_likes_number, message="You need to specify a likes number", type="WARNING", br=1)
+				else:
+					show_ui_message("Getting likes...", "INFO", br=1)
+					favorites.set_favorites_information(api, username, int(ui.tb_likes_number.text()))
+					show_ui_message("Likes: OK", "INFO", br=1)
+			else:
+				show_ui_message("The user has not marked favorite tweets", "INFO", br=1)
+
+		# All operations finished
+		show_ui_message("Operations: OK", "INFO", 1)
+		show_ui_message("Generating report...", "INFO", 1)
+
+		# Generates HTML file
+		generates_HTML_file(parameters, user, source, social_networks, hashtag, mentions, geolocation, user_images, user_tweets, search, user_conversations, favorites, top_words, activity, user_relations)
+
+		strPath = os.path.dirname(os.path.abspath(__file__))
+		strDir = parameters.html_output_directory
+		strFile = str(ui.tb_report_filename.text())
+
+		html_dir = strPath + "/" + strDir + "/" + strFile
+
+		show_ui_message("Report: OK", "INFO", 1)
+		show_ui_message("Your HTML report: <b>" + html_dir + "</b><br>", "INFO", 1)
+
+	except Exception, e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+
+# ----------------------------------------------------------------------
+def get_information_for_place():
+	"""Search info about a PLACE"""
+	try:
+
+		source = Sources()
+		hashtag = Hashtags()
+		mentions = Mentions()
+		user_images = User_Images()
+		geolocation = Geolocation()
+		user = User()
+		search = Search_GeoTweets()
+		user_tweets = User_Tweets()
+		user_conversations = User_Conversations()
+		user_relations = User_Relations()
+		social_networks = Social_Networks()
+		followers = Followers()
+		friends = Friends()
+		lists = Lists()
+		collections = Collections()
+		favorites = Favorites()
+		top_words = Words_Tweets()
+		activity = Activity()
+		coordinates = ui.tb_place_lat.text() + "," + ui.tb_place_lon.text() + "," + ui.tb_place_km.text() + "km"
+
+		show_ui_message("Looking info for <b>" + coordinates + "</b>:", "INFO", 1)
+		show_ui_message("Getting place information...", "INFO", 1)
+
+		tmp_api = api.get_user("vaguileradiaz")
+		user.set_user_information(tmp_api)
+
+		results = search.set_geolocation_information(coordinates, hashtag, mentions, social_networks, user_images, user_tweets, source, activity, top_words)
+
+		show_ui_message("Place information: OK", "INFO", 1)
+
+		if results:
+			if ui.cb_hashtags.isChecked():
+				hashtag.set_global_information()
+
+			if ui.cb_mentions.isChecked():
+				mentions.set_global_information()
+
+			if ui.cb_source_apps.isChecked():
+				# Get info about the source apps
+				show_ui_message("Getting source apps...", "INFO", br=1)
+				source.set_global_information()
+				show_ui_message("Source apps: OK", "INFO", br=1)
+
+			if ui.cb_activity.isChecked():
+				# Get info about the user activity
+				show_ui_message("Getting user activity...", "INFO", br=1)
+				activity.set_global_information()
+				show_ui_message("User activity: OK", "INFO", br=1)
+
+			if ui.cb_words_frequency.isChecked():
+				# Get words most used
+				if not ui.tb_words_frequency_number.text():
+					show_alert_field(field=ui.tb_words_frequency_number, message="You need to specify a words number",
+									 type="WARNING", br=1)
+				else:
+					show_ui_message("Getting words...", "INFO", br=1)
+					wordlist = sorted(top_words.top_words.items(), key=operator.itemgetter(1))
+					wordlist.reverse()
+					max = int(ui.tb_words_frequency_number.text())
+					if max > len(wordlist) - 1:
+						max = len(wordlist) - 1
+					top_words.ordered_words = wordlist[0:max]
+					for n in top_words.ordered_words:
+						top_words.total_occurrences += n[1]
+					show_ui_message("Words: OK", "INFO", br=1)
+
+		parameters = Parameters()
+		show_ui_message("Generating report...", "INFO", 1)
+
+		# Generates HTML file
+		generates_HTML_file(parameters, user, source, social_networks, hashtag, mentions, geolocation, user_images, user_tweets, search, user_conversations, favorites, top_words, activity, user_relations)
+
+		strPath = os.path.dirname(os.path.abspath(__file__))
+		strDir = parameters.html_output_directory
+		strFile = str(ui.tb_report_filename.text())
+
+		html_dir = strPath + "/" + strDir + "/" + strFile
+
+		show_ui_message("Report: OK", "INFO", 1)
+		show_ui_message("Your HTML report: <b>" + html_dir + "</b><br>", "INFO", 1)
+
 	except Exception as e:
-		show_error(e)
-		sys.exit(1)
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
+
+# ----------------------------------------------------------------------
+def get_information_for_timeline():
+	"""Search info about the global timeline"""
+	try:
+
+		source = Sources()
+		hashtag = Hashtags()
+		mentions = Mentions()
+		user_images = User_Images()
+		geolocation = Geolocation()
+		user = User()
+		search = Search_GeoTweets()
+		user_tweets = User_Tweets()
+		user_conversations = User_Conversations()
+		user_relations = User_Relations()
+		social_networks = Social_Networks()
+		followers = Followers()
+		friends = Friends()
+		lists = Lists()
+		collections = Collections()
+		favorites = Favorites()
+		top_words = Words_Tweets()
+		activity = Activity()
+
+		coordinates = ui.tb_place_lat.text() + "," + ui.tb_place_lon.text() + "," + ui.tb_place_km.text() + "km"
+		show_ui_message("Looking info at <b>global timeline</b>:", "INFO", 1)
+		show_ui_message("Getting timeline information...", "INFO", 1)
+
+		tmp_api = api.get_user("vaguileradiaz")
+		user.set_user_information(tmp_api)
+
+		results = search.set_search_information(hashtag, mentions, user_images, user_tweets, source, activity, top_words)
+
+		show_ui_message("Timeline information: OK", "INFO", 1)
+
+		if results:
+			if ui.cb_hashtags.isChecked():
+				hashtag.set_global_information()
+
+			if ui.cb_mentions.isChecked():
+				mentions.set_global_information()
+
+			if ui.cb_source_apps.isChecked():
+				# Get info about the source apps
+				show_ui_message("Getting source apps...", "INFO", br=1)
+				source.set_global_information()
+				show_ui_message("Source apps: OK", "INFO", br=1)
+
+			if ui.cb_activity.isChecked():
+				# Get info about the user activity
+				show_ui_message("Getting user activity...", "INFO", br=1)
+				activity.set_global_information()
+				show_ui_message("User activity: OK", "INFO", br=1)
+
+			if ui.cb_words_frequency.isChecked():
+				# Get words most used
+				if not ui.tb_words_frequency_number.text():
+					show_alert_field(field=ui.tb_words_frequency_number, message="You need to specify a words number",
+									 type="WARNING", br=1)
+				else:
+					show_ui_message("Getting words...", "INFO", br=1)
+					wordlist = sorted(top_words.top_words.items(), key=operator.itemgetter(1))
+					wordlist.reverse()
+					max = int(ui.tb_words_frequency_number.text())
+					if max > len(wordlist) - 1:
+						max = len(wordlist) - 1
+					top_words.ordered_words = wordlist[0:max]
+					for n in top_words.ordered_words:
+						top_words.total_occurrences += n[1]
+					show_ui_message("Words: OK", "INFO", br=1)
+
+		parameters = Parameters()
+		show_ui_message("Generating report...", "INFO", 1)
+
+		# Generates HTML file
+		generates_HTML_file(parameters, user, source, social_networks, hashtag, mentions, geolocation, user_images, user_tweets, search, user_conversations, favorites, top_words, activity, user_relations)
+
+		strPath = os.path.dirname(os.path.abspath(__file__))
+		strDir = parameters.html_output_directory
+		strFile = str(ui.tb_report_filename.text())
+
+		html_dir = strPath + "/" + strDir + "/" + strFile
+
+		show_ui_message("Report: OK", "INFO", 1)
+		show_ui_message("Your HTML report: <b>" + html_dir + "</b><br>", "INFO", 1)
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def get_information_from_interface():
+    """Get information about a Twitter user"""
+    try:
+
+        if ui.rb_user.isChecked():
+            # Target of Analysis: User
+            if ui.tb_username.text() == "":
+                show_alert_field(field = ui.tb_username, message = "You need to specify a username", type = "WARNING", br = 1)
+            else:
+                # Get information for a USER
+                get_information_for_user_target()
+        else:
+            if ui.rb_place.isChecked():
+                # Target of Analysis: Place
+                if ui.tb_place_lat.text() == "":
+                    show_alert_field(field=ui.tb_place_lat, message="You need to specify a latitude", type="WARNING", br=1)
+                else:
+                    if ui.tb_place_lon.text() == "":
+                        show_alert_field(field=ui.tb_place_lon, message="You need to specify a longitude", type="WARNING", br=1)
+                    else:
+                        if ui.tb_place_km.text() == "":
+                            show_alert_field(field=ui.tb_place_km, message="You need to specify a distance", type="WARNING", br=1)
+                        else:
+                            # Get information for a PLACE
+                            get_information_for_place()
+            else:
+                if ui.rb_global_timeline.isChecked():
+                    # Target of Analysis: Global timeline
+					get_information_for_timeline()
+
+    except Exception as e:
+        show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def show_ui_message(message, type, br):
+	""" Show message in user interface"""
+	try:
+
+		app.processEvents()
+		datenow = datetime.datetime.now().strftime('%Y-%m-%d')
+		timenow = datetime.datetime.now().strftime('%H:%M:%S')
+		ui.tb_messages.insertHtml("[ " + datenow + " " + timenow + " ] ")
+
+		color = "black"
+		if type == "ERROR":
+			color = "red"
+		else:
+			if type == "INFO":
+				color = "blue"
+			else:
+				if type == "WARNING":
+					color = "orange"
+
+		ui.tb_messages.insertHtml("<font color=" + color + ">" + type + "</font> : ")
+		ui.tb_messages.insertHtml(message)
+		if br:
+			ui.tb_messages.insertHtml("<br>")
+		sb = ui.tb_messages.verticalScrollBar()
+		sb.setValue(sb.maximum())
+		app.processEvents()
+
+		return datenow, timenow
+
+	except Exception, e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def show_alert_field(field, message, type, br):
+	""" Show alert in form field """
+	try:
+
+		field.setStyleSheet("background-color: rgb(0, 0, 255);")
+		show_ui_message(message, type, br)
+		time.sleep(0.05)
+		field.setStyleSheet("background-color: rgb(255, 255, 255);")
+		field.setFocus()
+
+	except Exception, e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
 def show_error(error):
 	""" Show error message """
 	try:
+
 		rate_limit = 0
 		print "\n\n\t\tOops! Something went wrong:"
 
@@ -4058,46 +4307,24 @@ def show_error(error):
 		else:
 			if str(error).find("Could not authenticate you") >= 0:
 				print "\t\tYou need to assign value to OAuth tokens. Please, read the README.txt file for more information."
-			else:	
-				print "\t\t" + str(sys.exc_info()[1][0][0]['message'])		
+			else:
+				print "\t\t" + str(sys.exc_info()[1][0][0]['message'])
 				if "Rate limit exceeded" in str(sys.exc_info()[1][0][0]['message']):
 					rate_limit = 1
-		print 
+		print
 
 		return rate_limit
-		
+
 	except Exception, e:
 		print "\t\t" + str(error) + "\n"
 		sys.exit(1)
 
-
-# ----------------------------------------------------------------------
-def get_string_with_padding(string, lon):
-	""" Return a string with the specified length """
-
-	try:
-		padding = " " * lon
-		if len(string) < lon:
-			string_tmp = string + padding[0:len(padding)-len(string)]
-			string = string_tmp[0:len(padding)]
-		else:
-			string_tmp = string
-			string = string_tmp[0:len(padding)]
-
-		return string
-		
-	except Exception as e:
-		show_error(e)
-		sys.exit(1)
-	
-
 # ----------------------------------------------------------------------
 def get_url_media_from_instagram(html):
 	""" Return a URL with the instagram photo or video """
-
 	try:
-		url_instagram = ""
 
+		url_instagram = ""
 		urls = re.search('og:video:secure_url" content="(.*)"', html)
 		if urls:
 			url_instagram = urls.group(1)
@@ -4105,76 +4332,73 @@ def get_url_media_from_instagram(html):
 			urls = re.search('og:image" content="(.*)"', html)
 			if urls:
 				url_instagram = urls.group(1)
-		
+
 		return url_instagram
-		
+
 	except Exception as e:
 		pass
-
 
 # ----------------------------------------------------------------------
 def get_tagged_users_from_instagram(html):
 	""" Return the tagged users in the instagram image """
-
 	try:
+
 		tagged_users = []
 		owner = ""
 		profile_image = ""
-		
-		urls = re.findall('{"user": {"username": "[^}]*"}, "x":', html)
-		
+
+		urls = re.findall('{"user":{"username":"[^}]*"},"x":', html)
+
 		for users in urls:
 			user = users[23:len(users)-8]
 			tagged_users.append(user)
 
-		urls = re.search('"viewer_has_saved_to_collection": (.*) "profile_pic_url": "(.*)", "username": "(.*)", "blocked_by_viewer"', html)
+		urls = re.search('"viewer_has_saved_to_collection":(.*)"profile_pic_url":"(.*)","username":"(.*)","blocked_by_viewer"', html)
 		if urls:
 			owner = urls.group(3)
 			profile_image = urls.group(2)
-						
-		
+
 		return tagged_users, owner, profile_image
-		
+
 	except Exception as e:
 		pass
-
 
 # ----------------------------------------------------------------------
 def get_hashtags_from_instagram(html):
 	""" Return the hashtags in the instagram message """
-
 	try:
+
 		hashtags = []
-			
-		hash = re.findall('<meta content="(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+" property="instapp:hashtags"', html)  
+
+		hash = re.findall('<meta content="(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+" property="instapp:hashtags"', html)
 		for h in hash:
 			hashtags.append(h[15:len(h)-29] .lower())
-						
+
 		return hashtags
-		
+
 	except Exception as e:
 		pass
-		
+
 
 # ----------------------------------------------------------------------
 def get_url_media_from_foursquare(url):
 	""" Return a URL with the foursquare photo or video """
-
 	try:
+
 		url_foursquare = ""
 		owner = ""
 		profile_image = ""
 
 		try:
-			response = urllib2.urlopen(str(url))  
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
-			return url_foursquare, owner, profile_image		
+			return url_foursquare, owner, profile_image
 
-		urls = re.search('<div id="mapContainer"><img src="(.*)" alt="(.*)" class="avatar mainUser"', html) 
+		urls = re.search('<div id="mapContainer"><img src="(.*)" alt="(.*)" class="avatar mainUser"', html)
 		if urls:
-			profile_image = urls.group(1) 
-		
+			profile_image = urls.group(1)
+
 		urls = re.search('","canonicalUrl":"https:(.*),"venue":{"name":"', html)
 
 		if urls:
@@ -4182,23 +4406,21 @@ def get_url_media_from_foursquare(url):
 			if urls:
 				owner = urls.group(1)[2:len(urls.group(1))-1]
 				urls = re.search('"canonicalPath":(.*)checkin', str(urls.group(1)))
-				if urls:	
+				if urls:
 
 					last_position = 0
 					try:
 						while True:
 							last_position = urls.group(1).index('"', last_position+1)
-					except ValueError: 
+					except ValueError:
 						owner = urls.group(1)[last_position+3:len(urls.group(1))-2]
 
 				url_foursquare = ""
 
 		return url_foursquare, owner, profile_image
-		
+
 	except Exception as e:
 		pass
-
-
 
 # ----------------------------------------------------------------------
 def get_url_facebook_from_foursquare(url):
@@ -4208,13 +4430,13 @@ def get_url_facebook_from_foursquare(url):
 		url_facebook = ""
 		user_facebook = ""
 		profile_image = ""
-		
+
 		try:
-			response = urllib2.urlopen(str(url))  
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
-			return url_facebook, user_facebook, profile_image 
-		urls = re.search('<a href="http://www.facebook.com/(.*)" rel="nofollow" target="_blank" class="fbLink iconLink"', html) 
+			return url_facebook, user_facebook, profile_image
+		urls = re.search('<a href="http://www.facebook.com/(.*)" rel="nofollow" target="_blank" class="fbLink iconLink"', html)
 		if urls:
 			url_facebook = urls.group(1)
 
@@ -4231,69 +4453,66 @@ def get_url_facebook_from_foursquare(url):
 				html = urllib2.urlopen(request.read())
 				urls = re.search('content="0; URL=/(.*)?_fb_noscript=1"', html)
 				if urls:
-					user_facebook = str(urls.group(1))	
+					user_facebook = str(urls.group(1))
 			except Exception as e:
 				pass
 
-		return url_facebook, user_facebook, profile_image 
-		
+		return url_facebook, user_facebook, profile_image
+
 	except Exception as e:
 		pass
-
 
 # ----------------------------------------------------------------------
 def get_user_from_facebook_url(url):
 	""" Return a URL with the facebook url from a foursquare user """
-
 	try:
+
 		user_facebook = ""
 		html = ""
 		try:
-			response = urllib2.urlopen(str(url)) 
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
 			pass
-		
+
 		urls = re.search('autocomplete="off" name="next" value="https://www.facebook.com/(.*)/posts/[0-9]*"', html)
 		if urls:
 			if str(urls.group(1)).find("profile.php") < 0:
 				user_facebook = urls.group(1)
 		else:
 			try:
-				response = urllib2.urlopen("http://longurl.org/expand?url="+url) 
+				response = urllib2.urlopen("http://longurl.org/expand?url="+url)
 				html = response.read()
 				urls = re.search('<a href="https://www.facebook.com/(.*)/posts/[0-9]*">https://', html)
 				if urls:
 					user_facebook = urls.group(1)
 			except Exception as e:
 				pass
-				
-		return user_facebook 
-		
+
+		return user_facebook
+
 	except Exception as e:
 		pass
-
-
 
 # ----------------------------------------------------------------------
 def get_user_from_flickr_url(url):
 	""" Return the username of a flickr user """
-
 	try:
+
 		user_flickr = ""
 		html = ""
 		try:
-			response = urllib2.urlopen(str(url)) 
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
 			pass
-		
+
 		urls = re.search('"og:url" content="https://www.flickr.com/photos/(.*)/[0-9]*/"', html)
 		if urls:
-				user_flickr = urls.group(1)
-				
+			user_flickr = urls.group(1)
+
 		return user_flickr
-		
+
 	except Exception as e:
 		pass
 
@@ -4301,40 +4520,39 @@ def get_user_from_flickr_url(url):
 # ----------------------------------------------------------------------
 def get_user_from_runkeeper_url(url):
 	""" Return the username of a Runkeeper user """
-
 	try:
+
 		user_runkeeper = ""
 		html = ""
 		try:
-			response = urllib2.urlopen(str(url)) 
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
 			pass
-		
+
 		urls = re.search('"https://runkeeper.com/user/(.*)/activity/', html)
 		if urls:
-				user_flickr = urls.group(1)
-				
-		return user_flickr
-		
+			user_runkeeper = urls.group(1)
+
+		return user_runkeeper
+
 	except Exception as e:
 		pass
-
 
 # ----------------------------------------------------------------------
 def get_user_from_vine_url(url):
 	""" Return the username of a Vine user """
-
 	try:
+
 		user = ""
 		html = ""
-		
+
 		try:
-			response = urllib2.urlopen(str(url)) 
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
 			pass
-		
+
 		urls = re.search('"name": "(.*)",', html)
 		if urls:
 			tmp = urls.group(1)
@@ -4342,86 +4560,86 @@ def get_user_from_vine_url(url):
 			if id:
 				user = id.group(1)
 				user = id.group(1) + "/" + str(tmp)
-		
+
 		return user
-		
+
 	except Exception as e:
 		pass
 
 # ----------------------------------------------------------------------
 def get_user_from_periscope_url(url):
 	""" Return the username of a Periscope user """
-
 	try:
+
 		user_periscope = ""
 		html = ""
 		try:
-			response = urllib2.urlopen(str(url)) 
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
 			pass
-		
+
 		urls = re.search('pscp://user/(.*)&quot;,&quot;inAppUrl', html)
 		if urls:
-				user_periscope = urls.group(1)
-		
+			user_periscope = urls.group(1)
+
 		return user_periscope
-		
+
 	except Exception as e:
 		pass
 
 # ----------------------------------------------------------------------
 def get_user_from_kindle_url(url):
 	""" Return the username of a Kindle user """
-
 	try:
+
 		user_kindle = ""
 		html = ""
 		try:
-			response = urllib2.urlopen(str(url)) 
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
 			pass
-		
+
 		urls = re.search('customerId":"(.*)","howLongAgo', html)
 		if urls:
-			tmp = urls.group(1)	
+			tmp = urls.group(1)
 			try:
 				url = "https://kindle.amazon.com/profile/redirect/" + tmp
-				response = urllib2.urlopen(str(url)) 
+				response = urllib2.urlopen(str(url))
 				html = response.read()
 			except Exception as e:
 				pass
 
 			urls = re.search('"/profile/(.*)"', html)
 			if urls:
-					user_kindle = urls.group(1)
-				
+				user_kindle = urls.group(1)
+
 		return user_kindle
-		
+
 	except Exception as e:
 		pass
 
 # ----------------------------------------------------------------------
 def get_user_from_youtube_url(url):
 	""" Return the username of a Youtube user """
-
 	try:
+
 		user = ""
 		html = ""
 
 		try:
-			response = urllib2.urlopen(str(url)) 
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
 			pass
-		
+
 		urls = re.search('/channel/(.*)" class', html)
 		if urls:
-			tmp = urls.group(1)	
+			tmp = urls.group(1)
 			try:
 				url = "http://www.youtube.com/channel/" + tmp
-				response = urllib2.urlopen(str(url)) 
+				response = urllib2.urlopen(str(url))
 				html = response.read()
 			except Exception as e:
 				pass
@@ -4433,31 +4651,31 @@ def get_user_from_youtube_url(url):
 				urls = re.search('<meta property="og:title" content="(.*)">', html)
 				if urls:
 						user = tmp + "/" + urls.group(1)
-				
+
 		return user
-		
+
 	except Exception as e:
 		pass
 
 # ----------------------------------------------------------------------
 def get_user_from_googleplus_url(url):
 	""" Return the username of a Google+ user """
-
 	try:
-		user = ""
+		user =\
+			""
 		html = ""
 		try:
-			response = urllib2.urlopen(str(url)) 
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
 			pass
-		
+
 		urls = re.search('"https://plus.google.com/(.*)">', html)
 		if urls:
-			tmp = urls.group(1)	
+			tmp = urls.group(1)
 			try:
 				url = "https://plus.google.com/" + tmp
-				response = urllib2.urlopen(str(url)) 
+				response = urllib2.urlopen(str(url))
 				html = response.read()
 			except Exception as e:
 				pass
@@ -4465,220 +4683,992 @@ def get_user_from_googleplus_url(url):
 			urls = re.search('<meta itemprop="url" content="https://plus.google.com/(.*)"><link rel="alternate" href="android-app:', html)
 			if urls:
 					user = tmp + "/" + urls.group(1)
- 
+
 		return user
-		
+
 	except Exception as e:
 		pass
 
 # ----------------------------------------------------------------------
 def get_user_from_frontback_url(url):
 	""" Return the username of a Frontback user """
-
 	try:
+
 		user = ""
 		html = ""
 		try:
-			response = urllib2.urlopen(str(url)) 
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
 			pass
-		
+
 		urls = re.search('post-info-username"><a class="no-ui" href="http://www.frontback.me/(.*)">(.*)</a></h1><h2 class="post-info-caption', html)
 		if urls:
 				user = urls.group(1)
-				
+
 		return user
-		
+
 	except Exception as e:
 		pass
-
 
 # ----------------------------------------------------------------------
 def get_url_media_from_youtube(url):
 	""" Return a URL with the foursquare photo or video """
-
 	try:
+
 		url_youtube = ""
-		
+
 		try:
-			response = urllib2.urlopen(str(url))  
+			response = urllib2.urlopen(str(url))
 			html = response.read()
 		except Exception as e:
 			return url_youtube
-		
-		urls = re.findall('data-expanded-url="http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', html)  
+
+		urls = re.findall('data-expanded-url="http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', html)
 
 		if urls:
 			url_youtube = urls[0][19:]
-			
+
 		return url_youtube
-		
+
 	except Exception as e:
 		pass
 
+# ----------------------------------------------------------------------
+def selectUser(table, checkbox_column, screen_name_column):
+	try:
+
+		selection = 0
+		rowCount = table.rowCount()
+		rowPosition = 0
+		while rowPosition < rowCount:
+			if table.cellWidget(rowPosition, checkbox_column):
+				if table.cellWidget(rowPosition, checkbox_column).findChild(type(QtGui.QCheckBox())).isChecked():
+					ui.tb_username.setText(table.item(rowPosition, screen_name_column).text().replace("@",""))
+					ui.tb_username.setFocus()
+					selection = 1
+					break
+			rowPosition += 1
+		return selection
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
 
 # ----------------------------------------------------------------------
-def main():
-	""" Main function"""
+def selectFile():
 	try:
-		parameters = Parameters() 
-		credits(parameters)
 
-		parser = argparse.ArgumentParser(
-			version='Tinfoleak v2.3',
-			formatter_class=argparse.RawTextHelpFormatter,
-			description='Tinfoleak: The most complete open-source tool for Twitter intelligence analysis.')
-		parser.add_argument('-u', '--user', dest="username", default='', help='Twitter user name. Example: "-u jack"')
-		parser.add_argument('-p', '--place', dest='latlonkm', help='Search tweets in a specific place filtering by LATitude, LONgitude, and KMs (distance). Example: "--place 41.4036299,2.1721725,0.5km"' )
-		parser.add_argument('-g', '--global', action='store_true', dest='global_timeline', help='Search in the global timeline')
-		parser.add_argument('-t', '--tweets', dest='tweets_number', default=200, help='Analyze TWEETS_NUMBER tweets (default: 200). Example: "-t 400"')
-		parser.add_argument('-i', '--info', action='store_true', dest='information', help='Get general information about the user')
-		parser.add_argument('-l', '--lists', action='store_true', dest='lists', help='Get information about the lists related to the user')
-		parser.add_argument('-c', '--collections', action='store_true', dest='collections', help='Get information about the collections created by the user')
-		parser.add_argument('-s', '--sources', action='store_true', dest='sources', help='Get the client applications used to publish every tweet')
-		parser.add_argument('-f', '--followers', default=0, dest='followers_number', help='Get the last FOLLOWERS_NUMBER followers for the user. Example: "-f 50"')
-		parser.add_argument('-r', '--friends', default=0, dest='friends_number', help='Get the last FRIENDS_NUMBER friends for the user. Example: "-r 50"')
-		parser.add_argument('-w', '--words', default=0, dest='words_number', help='Get the top WORDS_NUMBER most used words. Example: "-w 25"')
-		parser.add_argument('-a', '--activity', action='store_true', dest='activity', help='Get statistics about the timeline activity.')
-		parser.add_argument('--conv', action='store_true', dest='conv', help='Get user conversations')
-		parser.add_argument('--sdate', dest='sdate', help='Filter the results with SDATE as start date (format: yyyy-mm-dd). Example: "--sdate 2017-07-01"')
-		parser.add_argument('--edate', dest='edate', help='Filter the results with EDATE as end date (format: yyyy-mm-dd). Example: "--edate 2017-07-31"')
-		parser.add_argument('--stime', default='00:00:00', dest='stime', help='Filter the results with STIME as start time (format: HH:MM:SS). Example: "--stime: 08:30:00"')
-		parser.add_argument('--etime', default='23:59:59', dest='etime', help='Filter the results with ETIME as end time (format: HH:MM:SS). Example: "--etime: 18:30:00"')
-		parser.add_argument('--hashtags', dest='hashtags_from_username', const='*', nargs='?', help='Get information about hashtags. If you specify HASHTAGS_FROM_USERNAME you can filter the results by this user')
-		parser.add_argument('--mentions', dest='mentions_from_username', const='*', nargs='?', help='Get information about user mentions. If you specify MENTIONS_FROM_USERNAME you can filter the results by this user')
-		parser.add_argument('--likes', default=0, dest='likes_number', help='Get information about the last LIKES_NUMBER favorites tweets. Example: "--likes 50"')
-		parser.add_argument('--meta', action='store_true', dest='meta', help='Get metadata information from user images')
-		parser.add_argument('--media', dest='d', const='*', help='[no value]: show user images and videos, [D]: download user images to \"username\" directory', type=str, nargs='?')
-		parser.add_argument('--social', action='store_true', dest='socialnetworks', default='', help='Identify user identities in social networks')
-		parser.add_argument('--geo', dest='file', default='', help='Get geolocation information and generates an output FILE (KML format). Example: "--geo output.kml"')
-		parser.add_argument('--top', dest='number', default='', help='Get top NUMBER locations visited by the user. Example: "--top 10"')
-		parser.add_argument('--pro', action='store_true', dest='protected', help='Get information about protected accounts.')
-		parser.add_argument('--find', dest='text', default='', help='Search tweets based on filters.\n[+]word : include "word", [-]word : not include "word", [+r] : retweeted, [-r] : not retweeted, [+m] : multimedia, [-m] : not multimedia, [+s]app : tweet from app, [-s]app : tweet not from app. Example: "--find \'[+m]happy [+m] [-r] [+s]android\'"')
-		parser.add_argument('-o', '--output', dest='output', default='', help='Generates a OUTPUT file (HTML format). Example: "-o output.html"')
+		tmp_user = User()
 
-		args = parser.parse_args()
+		# Clean previous results
+		users_window_ui.tbl_users.setRowCount(0)
 
-		if args.sdate:
-			parameters.sdate = args.sdate
-		else:			
-			today = date.today()
-			if args.latlonkm:
-				parameters.sdate = date.fromordinal(today.toordinal()-14).strftime('%Y-%m-%d')
+		# Select file
+		filename = QtGui.QFileDialog.getOpenFileName()
+		if filename:
+			users_window_ui.lb_file.setText(filename)
+
+			# Read file
+			row = 0
+			valid_users = 0
+			invalid_users = 0
+
+			if ui.tb_users_number.text() != "":
+				users_limit = int(ui.tb_users_number.text())
 			else:
-				parameters.sdate = date.fromordinal(today.toordinal()-365).strftime('%Y-%m-%d')				
-			args.sdate = parameters.sdate
-		
-		if args.edate:
-			parameters.edate = args.edate
+				users_limit = 10
+
+			with open(filename) as f:
+				show_ui_message("Analyzing file: " + str(filename), "INFO", 1)
+				for line in f.readlines():
+					try:
+						if row < users_limit:
+							tmp_user = api.get_user(line.strip("\n"))
+							rowPosition = users_window_ui.tbl_users.rowCount()
+							users_window_ui.tbl_users.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+							users_window_ui.tbl_users.insertRow(rowPosition)
+
+							img_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + tmp_user.screen_name
+							if not os.path.isdir(img_directory):
+								os.mkdir(img_directory)
+
+							img = ""
+							# Profile image
+							if len(tmp_user.profile_image_url)>0:
+								img = urllib2.urlopen(tmp_user.profile_image_url.replace("_normal.", ".")).read()
+							else:
+								img = urllib2.urlopen("https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png")
+							filename = str(tmp_user.id) + "-profile-image.jpg"
+							imgFile = img_directory + "/" + filename
+							if not os.path.exists(imgFile):
+								fd = open(imgFile, 'wb')
+								fd.write(img)
+								fd.close()
+
+							pixmap = QtGui.QPixmap(imgFile)
+							icon_button_profile_image = QtGui.QToolButton(parent=w)
+							icon_button_profile_image.setIcon(QtGui.QIcon(pixmap))
+							icon_button_profile_image.setIconSize(QtCore.QSize(100,100))
+							icon_button_profile_image.setAutoRaise(True)
+
+							# Profile background image
+							try:
+								img = urllib2.urlopen(tmp_user.profile_banner_url.replace("_normal.", ".")).read()
+							except Exception as e:
+								if tmp_user.profile_background_image_url:
+									img = urllib2.urlopen(tmp_user.profile_background_image_url.replace("_normal.", ".")).read()
+
+							filename = str(tmp_user.id) + "-profile-banner-image.jpg"
+							imgFile = img_directory + "/" + filename
+							if not os.path.exists(imgFile):
+								fd = open(imgFile, 'wb')
+								fd.write(img)
+								fd.close()
+
+							pixmap = QtGui.QPixmap(imgFile)
+							icon_button_profile_background_image = QtGui.QToolButton(parent=w)
+							icon_button_profile_background_image.setIcon(QtGui.QIcon(pixmap))
+							icon_button_profile_background_image.setIconSize(QtCore.QSize(300,100))
+							icon_button_profile_background_image.setAutoRaise(True)
+
+							checkbox = QtGui.QCheckBox()
+							checkbox.setText("")
+
+							cell_widget = QtGui.QWidget()
+							layout_widget = QtGui.QHBoxLayout(cell_widget)
+							layout_widget.addWidget(checkbox)
+							layout_widget.setAlignment(QtCore.Qt.AlignCenter)
+							layout_widget.setContentsMargins(0, 0, 0, 0)
+							cell_widget.setLayout(layout_widget)
+
+							users_window_ui.tbl_users.setCellWidget(row, 0, cell_widget)
+							users_window_ui.tbl_users.setCellWidget(row, 1, icon_button_profile_image)
+							users_window_ui.tbl_users.setCellWidget(row, 2, icon_button_profile_background_image)
+							users_window_ui.tbl_users.setItem(row, 3, QtGui.QTableWidgetItem(str(tmp_user.created_at)))
+							users_window_ui.tbl_users.setItem(row, 4, QtGui.QTableWidgetItem("@" + tmp_user.screen_name))
+							users_window_ui.tbl_users.setItem(row, 5, QtGui.QTableWidgetItem(tmp_user.name.decode('utf-8')))
+							users_window_ui.tbl_users.setItem(row, 6, QtGui.QTableWidgetItem(str(tmp_user.protected)))
+							users_window_ui.tbl_users.setItem(row, 7, QtGui.QTableWidgetItem(str(tmp_user.description).decode('utf-8')))
+							users_window_ui.tbl_users.setItem(row, 8, QtGui.QTableWidgetItem(str(tmp_user.followers_count)))
+							users_window_ui.tbl_users.setItem(row, 9, QtGui.QTableWidgetItem(str(tmp_user.friends_count)))
+							users_window_ui.tbl_users.resizeColumnsToContents()
+							users_window_ui.tbl_users.setRowHeight(row, 100)
+
+							row += 1
+							valid_users += 1
+							show_ui_message("User identified: <b>@" + str(tmp_user.screen_name) + "</b>", "INFO", 1)
+					except Exception as e:
+						invalid_users += 1
+						show_ui_message(str(e), "WARNING", 1)
+
+			users_window_ui.tbl_users.removeRow(row)
+			f.close()
+
+			users_window_ui.lb_valid_users.setText(str(valid_users))
+			users_window_ui.lb_invalid_users.setText(str(invalid_users))
+
+			# Show window
+			w.show()
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def selectLastFile():
+	try:
+
+		if w.isHidden():
+			w.show()
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def setKMLOutputFile():
+	try:
+
+		if ui.cb_kml_file_screen_name.isChecked():
+			if ui.tb_username.text():
+				ui.tb_kml_filename.setText(ui.tb_username.text() + ".kml")
 		else:
-			tmp = datetime.datetime.now() + datetime.timedelta(days=1)
-			parameters.edate = tmp.strftime('%Y-%m-%d')
-			args.edate = parameters.edate
-			
-		if args.stime:
-			parameters.stime = args.stime
+			ui.tb_kml_filename.setText("tinfoleak.kml")
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def setHTMLOutputFile():
+	try:
+
+		if ui.cb_file_screen_name.isChecked():
+			if ui.tb_username.text():
+				ui.tb_report_filename.setText(ui.tb_username.text() + ".html")
 		else:
-			parameters.stime = "00:00:00"
-		
-		if args.etime:
-			parameters.etime= args.etime
+			ui.tb_report_filename.setText("tinfoleak.html")
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def enableOperations():
+	try:
+
+		boolEnabled = False
+		boolChecked = False
+
+		if ui.rb_user.isChecked():
+			# Target of Analysis = User
+			boolEnabled = True
 		else:
-			parameters.etime = "23:59:59"
+			# Target of Analysis = Place | Timeline
+			boolChecked = True
 
-		if args.file:
-			parameters.geo = args.file
+		# Likes
+		ui.cb_likes.setEnabled(boolEnabled)
+		ui.cb_likes.setChecked(boolChecked)
+		ui.tb_likes_number.setEnabled(boolEnabled)
+
+		# Lists
+		ui.cb_lists.setEnabled(boolEnabled)
+		ui.cb_lists.setChecked(boolChecked)
+		ui.tb_lists_number.setEnabled(boolEnabled)
+		ui.pb_lists_view.setEnabled(boolEnabled)
+
+		# Collections
+		ui.cb_collections.setEnabled(boolEnabled)
+		ui.cb_collections.setChecked(boolChecked)
+		ui.tb_collections_number.setEnabled(boolEnabled)
+		ui.pb_collections_view.setEnabled(boolEnabled)
+
+		# Followers
+		ui.cb_followers.setEnabled(boolEnabled)
+		ui.cb_followers.setChecked(boolChecked)
+		ui.tb_followers_number.setEnabled(boolEnabled)
+		ui.pb_followers_view.setEnabled(boolEnabled)
+
+		# Friends
+		ui.cb_friends.setEnabled(boolEnabled)
+		ui.cb_friends.setChecked(boolChecked)
+		ui.tb_friends_number.setEnabled(boolEnabled)
+		ui.pb_friends_view.setEnabled(boolEnabled)
+
+		# Locations
+		ui.cb_visited_locations.setEnabled(boolEnabled)
+		ui.cb_visited_locations.setChecked(boolChecked)
+		ui.tb_top_locations.setEnabled(boolEnabled)
+		ui.tb_kml_filename.setEnabled(boolEnabled)
+		ui.cb_kml_file_screen_name.setEnabled(boolEnabled)
+		ui.cb_kml_file_screen_name.setChecked(boolChecked)
+
+		# Protected account
+		ui.cb_protected_account.setEnabled(boolEnabled)
+		ui.cb_protected_account.setChecked(boolChecked)
+
+		# Conversations
+		ui.cb_conversations.setEnabled(boolEnabled)
+		ui.cb_conversations.setChecked(boolChecked)
+
+		# Social networks
+		ui.cb_social_networks.setEnabled(boolEnabled)
+		ui.cb_social_networks.setChecked(boolChecked)
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def setUnsetAllUsers(table, checkbox_all, column):
+	try:
+
+		rowCount = table.rowCount()
+		rowPosition = 0
+		while rowPosition < rowCount:
+			if checkbox_all.isChecked():
+				# Select all users
+				table.cellWidget(rowPosition, column).findChild(type(QtGui.QCheckBox())).setChecked(True)
+			else:
+				# Unselect all users
+				table.cellWidget(rowPosition, column).findChild(type(QtGui.QCheckBox())).setChecked(False)
+			rowPosition += 1
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def setUnsetUserRelations(table, relation_column, checkbox_relation):
+	try:
+
+		rowCount = table.rowCount()
+		rowPosition = 0
+		while rowPosition < rowCount:
+			if checkbox_relation.isChecked():
+				if table.item(rowPosition, relation_column).text() == "0":
+					table.hideRow(rowPosition)
+			else:
+				table.showRow(rowPosition)
+
+			rowPosition += 1
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def selectUsersFile(lbl_file):
+	try:
+
+		# Select file
+		filename = QtGui.QFileDialog.getOpenFileName()
+		lbl_file.setText(filename)
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def showUserRelations():
+	try:
+
+		# Connect pushButton
+		user_relations_ui.pb_select_file_user2.clicked.connect(lambda: selectUsersFile(user_relations_ui.lb_file_user2))
+		user_relations_ui.tbl_relations.hideColumn(9)
+
+		# Show window
+		user_relations_window.show()
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def get_icon_button_profile_image(tmp_user, tmp_window):
+    try:
+
+        img_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + tmp_user.screen_name
+        if not os.path.isdir(img_directory):
+            os.mkdir(img_directory)
+
+        # Profile image
+        img = urllib2.urlopen(tmp_user.profile_image_url.replace("_normal.", ".")).read()
+        filename = str(tmp_user.id) + "-profile-image.jpg"
+        imgFile = img_directory + "/" + filename
+        if not os.path.exists(imgFile):
+            fd = open(imgFile, 'wb')
+            fd.write(img)
+            fd.close()
+
+        pixmap = QtGui.QPixmap(imgFile)
+        icon_button_profile_image = QtGui.QToolButton(parent=tmp_window)
+        icon_button_profile_image.setIcon(QtGui.QIcon(pixmap))
+        icon_button_profile_image.setIconSize(QtCore.QSize(100, 100))
+        icon_button_profile_image.setAutoRaise(True)
+
+        return icon_button_profile_image
+
+    except Exception as e:
+        show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def get_icon_button_relations_image(user1, user2, tmp_window):
+	try:
+
+		relation_code = 0
+		friendship = api.show_friendship(source_screen_name=user1, target_screen_name=user2)
+
+		# Arrow directory
+		img_directory = os.path.dirname(os.path.abspath(__file__)) + "/Output_Reports/img"
+
+		# Arrow left
+		filename = "arrow-left.png"
+		imgFile = img_directory + "/" + filename
+		pixmap = QtGui.QPixmap(imgFile)
+		icon_button_arrow_left_image = QtGui.QToolButton(parent=tmp_window)
+		icon_button_arrow_left_image.setIcon(QtGui.QIcon(pixmap))
+		icon_button_arrow_left_image.setIconSize(QtCore.QSize(100, 100))
+		icon_button_arrow_left_image.setAutoRaise(True)
+
+		# Arrow right
+		filename = "arrow-right.png"
+		imgFile = img_directory + "/" + filename
+		pixmap = QtGui.QPixmap(imgFile)
+		icon_button_arrow_right_image = QtGui.QToolButton(parent=tmp_window)
+		icon_button_arrow_right_image.setIcon(QtGui.QIcon(pixmap))
+		icon_button_arrow_right_image.setIconSize(QtCore.QSize(100, 100))
+		icon_button_arrow_right_image.setAutoRaise(True)
+
+		# Arrow left-right
+		filename = "arrow-left-right.png"
+		imgFile = img_directory + "/" + filename
+		pixmap = QtGui.QPixmap(imgFile)
+		icon_button_arrow_left_right_image = QtGui.QToolButton(parent=tmp_window)
+		icon_button_arrow_left_right_image.setIcon(QtGui.QIcon(pixmap))
+		icon_button_arrow_left_right_image.setIconSize(QtCore.QSize(100, 100))
+		icon_button_arrow_left_right_image.setAutoRaise(True)
+
+		# No arrow
+		filename = "no-relations.png"
+		imgFile = img_directory + "/" + filename
+		pixmap = QtGui.QPixmap(imgFile)
+		icon_button_no_relations_image = QtGui.QToolButton(parent=tmp_window)
+		icon_button_no_relations_image.setIcon(QtGui.QIcon(pixmap))
+		icon_button_no_relations_image.setIconSize(QtCore.QSize(100, 100))
+		icon_button_no_relations_image.setAutoRaise(True)
+
+		if friendship[0].following and friendship[0].followed_by:
+			icon_button_relations_image = icon_button_arrow_left_right_image
+			relation_code = 3
 		else:
-			parameters.geo = ""
+			if friendship[0].following:
+				icon_button_relations_image = icon_button_arrow_right_image
+				relation_code = 1
+			else:
+				if friendship[0].followed_by:
+					icon_button_relations_image = icon_button_arrow_left_image
+					relation_code = 2
+				else:
+					icon_button_relations_image = icon_button_no_relations_image
+					relation_code = 0
 
-		if args.number:
-			parameters.top = args.number
-			parameters.output_geolocation = 1
+
+		return icon_button_relations_image, relation_code
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def get_checkbox_widget(checkbox_label):
+    try:
+
+		checkbox = QtGui.QCheckBox()
+		checkbox.setText(checkbox_label)
+
+		cell_widget = QtGui.QWidget()
+		layout_widget = QtGui.QHBoxLayout(cell_widget)
+		layout_widget.addWidget(checkbox)
+		layout_widget.setAlignment(QtCore.Qt.AlignCenter)
+		layout_widget.setContentsMargins(0, 0, 0, 0)
+		cell_widget.setLayout(layout_widget)
+
+		return cell_widget
+
+    except Exception as e:
+        show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def show_relation_from_user_to_file(username, filename, table):
+	try:
+		tmp_user1 = User()
+		tmp_user2 = User()
+
+		# Clean previous results
+		table.setRowCount(0)
+
+		tmp_user1 = api.get_user(username)
+
+		# Read file
+		row = 0
+
+		with open(filename) as f:
+			show_ui_message("Analyzing file: " + str(filename), "INFO", 1)
+			for line in f.readlines():
+				try:
+					if row < int(ui.tb_users_number.text()):
+						tmp_user2 = api.get_user(line.strip("\n"))
+
+						if str(tmp_user1.screen_name).lower() != str(tmp_user2.screen_name).lower():
+
+							rowPosition = table.rowCount()
+							table.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+							table.insertRow(rowPosition)
+
+							icon_button_profile_image_user1 = get_icon_button_profile_image(tmp_user1, user_relations_window)
+							icon_button_profile_image_user2 = get_icon_button_profile_image(tmp_user2, user_relations_window)
+
+							cell_widget1 = get_checkbox_widget("")
+							cell_widget2 = get_checkbox_widget("")
+
+							icon_button_relations_image, relation_code = get_icon_button_relations_image(username, tmp_user2.screen_name, user_relations_window)
+
+							table.setCellWidget(row, 0, cell_widget1)
+							table.setCellWidget(row, 1, icon_button_profile_image_user1)
+							table.setItem(row, 2, QtGui.QTableWidgetItem("@" + tmp_user1.screen_name))
+							table.setItem(row, 3, QtGui.QTableWidgetItem(tmp_user1.name.decode('utf-8')))
+							table.setCellWidget(row, 4, icon_button_relations_image)
+							table.setCellWidget(row, 5, cell_widget2)
+							table.setCellWidget(row, 6, icon_button_profile_image_user2)
+							table.setItem(row, 7, QtGui.QTableWidgetItem("@" + tmp_user2.screen_name))
+							table.setItem(row, 8, QtGui.QTableWidgetItem(tmp_user2.name.decode('utf-8')))
+							table.setItem(row, 9, QtGui.QTableWidgetItem(str(relation_code)))
+
+							table.setRowHeight(row, 100)
+							table.resizeColumnsToContents()
+
+							table.verticalScrollBar().setValue(table.verticalScrollBar().maximum())
+
+							row += 1
+							show_ui_message("User identified: <b>@" + str(tmp_user2.screen_name) + "</b>", "INFO", 1)
+				except Exception as e:
+					show_ui_message(str(e), "WARNING", 1)
+
+		table.removeRow(row)
+		f.close()
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def show_lists():
+	try:
+		# Clean previous results
+		user_lists_ui.tbl_header.setRowCount(0)
+		user_lists_ui.tbl_subscribed.setRowCount(0)
+		user_lists_ui.tbl_ownership.setRowCount(0)
+		user_lists_ui.tbl_membership.setRowCount(0)
+
+		screen_name = ui.tb_username.text()
+		tmp_user = User()
+		tmp_user = api.get_user(screen_name)
+		icon_button_profile_image_user = get_icon_button_profile_image(tmp_user, user_lists_window)
+
+		user_lists_ui.tbl_header.insertRow(0)
+		user_lists_ui.tbl_header.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+		user_lists_ui.tbl_header.setCellWidget(0, 0, icon_button_profile_image_user)
+		user_lists_ui.tbl_header.setItem(0, 1, QtGui.QTableWidgetItem(screen_name))
+		user_lists_ui.tbl_header.setItem(0, 2, QtGui.QTableWidgetItem(tmp_user.description))
+		user_lists_ui.tbl_header.setRowHeight(0, 100)
+		user_lists_ui.tbl_header.resizeColumnsToContents()
+
+		# Subscribed lists
+		subscribed_file = screen_name + "_lists.txt"
+		username_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + screen_name
+		csvFile = open(username_directory + "/" + subscribed_file, "rb")
+		list_reader = csv.reader(csvFile)
+
+		rowCount = 0
+		for row in list_reader:
+			if rowCount > 10:
+				rowPosition = user_lists_ui.tbl_subscribed.rowCount()
+				user_lists_ui.tbl_subscribed.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+				user_lists_ui.tbl_subscribed.insertRow(rowPosition)
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(row[1])))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(row[2]).decode('utf-8')))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(row[3]).decode('utf-8')))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 3, QtGui.QTableWidgetItem(str(row[4])))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 4, QtGui.QTableWidgetItem(str(row[5])))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 5, QtGui.QTableWidgetItem(str(row[6])))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 6, QtGui.QTableWidgetItem(str(row[7])))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 7, QtGui.QTableWidgetItem(str(row[8])))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 8, QtGui.QTableWidgetItem(str(row[9]).decode('utf-8')))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 9, QtGui.QTableWidgetItem(str(row[10]).decode('utf-8')))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 10, QtGui.QTableWidgetItem(str(row[11])))
+				user_lists_ui.tbl_subscribed.setItem(rowPosition, 11, QtGui.QTableWidgetItem(str(row[12])))
+			rowCount += 1
+
+		user_lists_ui.tbl_subscribed.resizeColumnsToContents()
+		csvFile.close()
+
+		# Ownerships lists
+		ownerships_file = screen_name + "_ownerships.txt"
+		username_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + screen_name
+		csvFile = open(username_directory + "/" + ownerships_file, "rb")
+		list_reader = csv.reader(csvFile)
+
+		rowCount = 0
+		for row in list_reader:
+			if rowCount > 10:
+				rowPosition = user_lists_ui.tbl_ownership.rowCount()
+				user_lists_ui.tbl_ownership.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+				user_lists_ui.tbl_ownership.insertRow(rowPosition)
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(row[1])))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(row[2]).decode('utf-8')))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(row[3]).decode('utf-8')))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 3, QtGui.QTableWidgetItem(str(row[4])))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 4, QtGui.QTableWidgetItem(str(row[5])))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 5, QtGui.QTableWidgetItem(str(row[6])))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 6, QtGui.QTableWidgetItem(str(row[7])))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 7, QtGui.QTableWidgetItem(str(row[8])))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 8, QtGui.QTableWidgetItem(str(row[9]).decode('utf-8')))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 9, QtGui.QTableWidgetItem(str(row[10]).decode('utf-8')))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 10, QtGui.QTableWidgetItem(str(row[11])))
+				user_lists_ui.tbl_ownership.setItem(rowPosition, 11, QtGui.QTableWidgetItem(str(row[12])))
+			rowCount += 1
+
+		user_lists_ui.tbl_ownership.resizeColumnsToContents()
+		csvFile.close()
+
+		# Ownerships lists
+		memberships_file = screen_name + "_memberships.txt"
+		username_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + screen_name
+		csvFile = open(username_directory + "/" + memberships_file, "rb")
+		list_reader = csv.reader(csvFile)
+
+		rowCount = 0
+		for row in list_reader:
+			if rowCount > 10:
+				rowPosition = user_lists_ui.tbl_membership.rowCount()
+				user_lists_ui.tbl_membership.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+				user_lists_ui.tbl_membership.insertRow(rowPosition)
+				user_lists_ui.tbl_membership.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(row[1])))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(row[2]).decode('utf-8')))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(row[3]).decode('utf-8')))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 3, QtGui.QTableWidgetItem(str(row[4])))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 4, QtGui.QTableWidgetItem(str(row[5])))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 5, QtGui.QTableWidgetItem(str(row[6])))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 6, QtGui.QTableWidgetItem(str(row[7])))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 7, QtGui.QTableWidgetItem(str(row[8])))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 8, QtGui.QTableWidgetItem(str(row[9]).decode('utf-8')))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 9, QtGui.QTableWidgetItem(str(row[10]).decode('utf-8')))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 10, QtGui.QTableWidgetItem(str(row[11])))
+				user_lists_ui.tbl_membership.setItem(rowPosition, 11, QtGui.QTableWidgetItem(str(row[12])))
+			rowCount += 1
+
+		user_lists_ui.tbl_membership.resizeColumnsToContents()
+		csvFile.close()
+
+		# Show window
+		user_lists_window.show()
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def show_collections():
+	try:
+		# Clean previous results
+		user_collections_ui.tbl_user.setRowCount(0)
+		user_collections_ui.tbl_collections.setRowCount(0)
+
+		# Get user data
+		screen_name = ui.tb_username.text()
+		tmp_user = User()
+		tmp_user = api.get_user(screen_name)
+		icon_button_profile_image_user = get_icon_button_profile_image(tmp_user, user_collections_window)
+
+		# Header
+		user_collections_ui.tbl_user.insertRow(0)
+		user_collections_ui.tbl_user.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+		user_collections_ui.tbl_user.setCellWidget(0, 0, icon_button_profile_image_user)
+		user_collections_ui.tbl_user.setItem(0, 1, QtGui.QTableWidgetItem(screen_name))
+		user_collections_ui.tbl_user.setItem(0, 2, QtGui.QTableWidgetItem(tmp_user.description))
+		user_collections_ui.tbl_user.setRowHeight(0, 100)
+		user_collections_ui.tbl_user.resizeColumnsToContents()
+
+		# Collections
+		collections_file = screen_name + "_collections.txt"
+		username_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + screen_name
+		csvFile = open(username_directory + "/" + collections_file, "rb")
+		collection_reader = csv.reader(csvFile)
+
+		rowCount = 0
+		for row in collection_reader:
+			if rowCount > 10:
+				rowPosition = user_collections_ui.tbl_collections.rowCount()
+				user_collections_ui.tbl_collections.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+				user_collections_ui.tbl_collections.insertRow(rowPosition)
+				user_collections_ui.tbl_collections.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(row[1])))
+				user_collections_ui.tbl_collections.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(row[2]).decode('utf-8')))
+				user_collections_ui.tbl_collections.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(row[3]).decode('utf-8')))
+				user_collections_ui.tbl_collections.setItem(rowPosition, 3, QtGui.QTableWidgetItem(str(row[4])))
+
+			rowCount += 1
+
+		user_collections_ui.tbl_collections.resizeColumnsToContents()
+		csvFile.close()
+
+		# Show window
+		user_collections_window.show()
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def show_followers():
+	try:
+
+		# Clean previous results
+		user_followers_ui.tbl_header.setRowCount(0)
+		user_followers_ui.tbl_followers.setRowCount(0)
+
+		screen_name = ui.tb_username.text()
+		tmp_user = User()
+		tmp_user = api.get_user(screen_name)
+		icon_button_profile_image_user = get_icon_button_profile_image(tmp_user, user_followers_window)
+
+		user_followers_ui.tbl_header.insertRow(0)
+		user_followers_ui.tbl_header.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+		user_followers_ui.tbl_header.setCellWidget(0, 0, icon_button_profile_image_user)
+		user_followers_ui.tbl_header.setItem(0, 1, QtGui.QTableWidgetItem(screen_name))
+		user_followers_ui.tbl_header.setItem(0, 2, QtGui.QTableWidgetItem(tmp_user.description))
+		user_followers_ui.tbl_header.setRowHeight(0, 100)
+		user_followers_ui.tbl_header.resizeColumnsToContents()
+
+		username_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + screen_name
+		if not os.path.isdir(username_directory):
+			show_ui_message("Resource <b>" + username_directory + "</b> not found", "ERROR", 1)
+
 		else:
-			parameters.top = ""
+			# Followers file
+			followers_file = "/followers-" + datetime.datetime.now().strftime('%Y%m%d') + "/" + screen_name + "_followers.txt"
+			csvFile = open(username_directory + "/" + followers_file, "rb")
+			followers_reader = csv.reader(csvFile)
 
-		if args.text:
-			parameters.find = args.text
-			parameters.output_tweet = 1
+			rowCount = 0
+			for row in followers_reader:
+				if rowCount > 10:
+					rowPosition = user_followers_ui.tbl_followers.rowCount()
+					user_followers_ui.tbl_followers.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+					user_followers_ui.tbl_followers.insertRow(rowPosition)
+					n =0
+					while n < 17:
+						user_followers_ui.tbl_followers.setItem(rowPosition, n, QtGui.QTableWidgetItem(str(row[n+1]).decode('utf-8')))
+						n += 1
+				rowCount += 1
+
+			user_followers_ui.tbl_followers.resizeColumnsToContents()
+			csvFile.close()
+
+			# Show window
+			user_followers_window.show()
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def show_friends():
+	try:
+
+		# Clean previous results
+		user_friends_ui.tbl_header.setRowCount(0)
+		user_friends_ui.tbl_friends.setRowCount(0)
+
+		screen_name = ui.tb_username.text()
+		tmp_user = api.get_user(screen_name)
+		icon_button_profile_image_user = get_icon_button_profile_image(tmp_user, user_friends_window)
+
+		user_friends_ui.tbl_header.insertRow(0)
+		user_friends_ui.tbl_header.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+		user_friends_ui.tbl_header.setCellWidget(0, 0, icon_button_profile_image_user)
+		user_friends_ui.tbl_header.setItem(0, 1, QtGui.QTableWidgetItem(screen_name))
+		user_friends_ui.tbl_header.setItem(0, 2, QtGui.QTableWidgetItem(tmp_user.description))
+		user_friends_ui.tbl_header.setRowHeight(0, 100)
+		user_friends_ui.tbl_header.resizeColumnsToContents()
+
+		username_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + screen_name
+		if not os.path.isdir(username_directory):
+			show_ui_message("Resource <b>" + username_directory + "</b> not found", "ERROR", 1)
+
 		else:
-			parameters.find = ""
+			# Friends file
+			friends_file = "/friends-" + datetime.datetime.now().strftime('%Y%m%d') + "/" + screen_name + "_friends.txt"
+			csvFile = open(username_directory + "/" + friends_file, "rb")
+			friends_reader = csv.reader(csvFile)
 
-		if args.output:
-			parameters.output= args.output
+			rowCount = 0
+			for row in friends_reader:
+				if rowCount > 10:
+					rowPosition = user_friends_ui.tbl_friends.rowCount()
+					user_friends_ui.tbl_friends.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+					user_friends_ui.tbl_friends.insertRow(rowPosition)
+					n =0
+					while n < 17:
+						user_friends_ui.tbl_friends.setItem(rowPosition, n, QtGui.QTableWidgetItem(str(row[n+1]).decode('utf-8')))
+						n += 1
+				rowCount += 1
+
+			user_friends_ui.tbl_friends.resizeColumnsToContents()
+			csvFile.close()
+
+			# Show window
+			user_friends_window.show()
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def selectTargetFromUserRelations():
+    try:
+
+		selection = 0
+		selection = selectUser(table=user_relations_ui.tbl_relations, checkbox_column=0, screen_name_column=2)
+		if not selection:
+			selectUser(table=user_relations_ui.tbl_relations, checkbox_column=5, screen_name_column=7)
+
+    except Exception as e:
+        show_ui_message(str(e) + "<br>", "ERROR", 1)
+
+# ----------------------------------------------------------------------
+def getUserRelations():
+	try:
+		tmp_user1 = User()
+		tmp_user2 = User()
+
+		# Clean previous results
+		user_relations_ui.tbl_relations.setRowCount(0)
+
+		user1 = user_relations_ui.tb_username.text()
+		user2 = user_relations_ui.tb_username_2.text()
+		file2 = user_relations_ui.lb_file_user2.text()
+
+		if user1 != "" and user2 != "":
+			tmp_user1 = api.get_user(user1)
+			tmp_user2 = api.get_user(user2)
+			user_relations_ui.lb_file_user2.setText("")
+
+			friendship = api.show_friendship(source_screen_name=user1, target_screen_name=user2)
+
+			user_relations_ui.tbl_relations.insertRow(0)
+			user_relations_ui.tbl_relations.setRowHeight(0,100)
+
+			if user_relations_ui.cb_profile_images.isChecked():
+				# User 1
+				icon_button_profile_image_user1 = get_icon_button_profile_image(tmp_user1, user_relations_window)
+
+				# User 2
+				icon_button_profile_image_user2 = get_icon_button_profile_image(tmp_user2, user_relations_window)
+
+				user_relations_ui.tbl_relations.setCellWidget(0, 1, icon_button_profile_image_user1)
+				user_relations_ui.tbl_relations.setCellWidget(0, 6, icon_button_profile_image_user2)
+
+			# Checkbox User 1
+			cell_widget_user1 = get_checkbox_widget("")
+
+			# Checkbox User 2
+			cell_widget_user2 = get_checkbox_widget("")
+
+			icon_button_relations_image, relation_code = get_icon_button_relations_image(user1, user2, user_relations_window)
+
+			user_relations_ui.tbl_relations.setCellWidget(0, 0, cell_widget_user1)
+			user_relations_ui.tbl_relations.setCellWidget(0, 5, cell_widget_user2)
+			user_relations_ui.tbl_relations.setItem(0, 2, QtGui.QTableWidgetItem("@" + tmp_user1.screen_name))
+			user_relations_ui.tbl_relations.setItem(0, 3, QtGui.QTableWidgetItem(tmp_user1.name.decode('utf-8')))
+			user_relations_ui.tbl_relations.setCellWidget(0, 4, icon_button_relations_image)
+			user_relations_ui.tbl_relations.setItem(0, 7, QtGui.QTableWidgetItem("@" + tmp_user2.screen_name))
+			user_relations_ui.tbl_relations.setItem(0, 8, QtGui.QTableWidgetItem(tmp_user2.name.decode('utf-8')))
+			user_relations_ui.tbl_relations.resizeColumnsToContents()
+
 		else:
-			parameters.output = "tinfoleak.html"
-		
-		if args.latlonkm:
-			parameters.search= args.latlonkm
-			parameters.output_search = 1
-		else:
-			parameters.search = ""
+			if user1 != "" and file2 != "":
+				show_relation_from_user_to_file(user1, file2, user_relations_ui.tbl_relations)
 
-		if args.meta:
-			parameters.output_metadata = 1
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
-		if args.socialnetworks:
-			parameters.output_social = 1
+# ----------------------------------------------------------------------
+def reset_filters():
+	try:
+		today = date.today()
+		sdate = date.fromordinal(today.toordinal() - 14)
+		edate = (datetime.datetime.now() + datetime.timedelta(days=1))
 
-		if args.hashtags_from_username:
-			parameters.hashtags_from_username = args.hashtags_from_username
-			parameters.output_hashtag = 1
+		ui.tb_sdate.setDate(QtCore.QDate(int(sdate.strftime('%Y')), int(sdate.strftime('%m')), int(sdate.strftime('%d'))))
+		ui.tb_edate.setDate(QtCore.QDate(int(edate.strftime('%Y')), int(edate.strftime('%m')), int(edate.strftime('%d'))))
 
-		if args.mentions_from_username:
-			parameters.mentions_from_username = args.mentions_from_username
-			parameters.output_mention = 1
+		ui.tb_stime.setTime(QtCore.QTime(0, 0, 0))
+		ui.tb_etime.setTime(QtCore.QTime(23, 59, 59))
 
-		if args.likes_number:
-			parameters.output_favorites = 1
+		ui.tb_include_words.setText("")
+		ui.tb_not_include_words.setText("")
+		ui.tb_source_app.setText("")
 
-		if args.d:
-			parameters.output_media = 1
+		ui.rb_RT_all.setChecked(True)
+		ui.rb_media_all.setChecked(True)
+		ui.rb_sourceapp_yes.setChecked(True)
 
-		if args.sources:
-			parameters.output_source = 1
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
-		if args.followers_number:
-			parameters.output_followers = args.followers_number
 
-		if args.friends_number:
-			parameters.output_friends = args.friends_number
-
-		if args.protected:
-			parameters.output_protected = 1
-
-		if args.words_number:
-			parameters.output_words = args.words_number
-
-		if args.conv:
-			parameters.output_conversation = 1
-
-		if args.username:
-			parameters.username= args.username
-
-		if args.activity:
-			parameters.output_activity = 1
-
-		
-		# Get the current time
-		sdatetime = datetime.datetime.now()
-		
-		# Obtain the information requested
-		get_information(args, parameters)
-
-		# Show the elapsed time
-		tdelta = datetime.datetime.now() - sdatetime 
-		hours, remainder = divmod(tdelta.seconds, 3600)
-		minutes, seconds = divmod(remainder, 60)
-		print "\n\n\tElapsed time: %02d:%02d:%02d" % (hours, minutes, seconds)
-		print "\nSee you soon!\n"
-		
-		parameters.elapsedtime = (hours, minutes, seconds)
-		
-	except Exception, e:
-		show_error(e)
-		sys.exit(1)
-				
-				
+################################
+# MAIN
+################################
 if __name__ == '__main__':
-	main()
+	try:
+
+		vconfig = Configuration()
+		api = vconfig.api
+		client = vconfig.client
+
+		# Graphical interface
+		app = QtGui.QApplication(sys.argv)
+		window = QtGui.QDialog()
+		ui = main_window.Ui_Dialog()
+		ui.setupUi(window)
+
+		# Window to select users from file
+		w = QtGui.QDialog(parent=window)
+		users_window_ui = users_window.Ui_Dialog()
+		users_window_ui.setupUi(w)
+		# Connect buttonBox
+		btn = users_window_ui.buttonBox.button(QtGui.QDialogButtonBox.Ok)
+		btn.clicked.connect(lambda: selectUser(table = users_window_ui.tbl_users, checkbox_column = 0, screen_name_column = 4))
+		# Connect checkbox : select all
+		users_window_ui.cb_all.stateChanged.connect(lambda: setUnsetAllUsers(table = users_window_ui.tbl_users, checkbox_all = users_window_ui.cb_all, column = 0))
+
+		# Window to identify user relations
+		user_relations_window = QtGui.QDialog(parent=window)
+		user_relations_ui = relations_window.Ui_Dialog()
+		user_relations_ui.setupUi(user_relations_window)
+		# Connect buttonBox
+		btn = user_relations_ui.buttonBox.button(QtGui.QDialogButtonBox.Apply)
+		btn.clicked.connect(getUserRelations)
+		btnClose = user_relations_ui.buttonBox.button(QtGui.QDialogButtonBox.Ok)
+		btnClose.clicked.connect(selectTargetFromUserRelations)
+		# Connect checkbox : select all
+		user_relations_ui.cb_all_user1.stateChanged.connect(lambda: setUnsetAllUsers(table = user_relations_ui.tbl_relations, checkbox_all = user_relations_ui.cb_all_user1, column = 0))
+		user_relations_ui.cb_all_user2.stateChanged.connect(lambda: setUnsetAllUsers(table= user_relations_ui.tbl_relations, checkbox_all= user_relations_ui.cb_all_user2,column=5))
+		user_relations_ui.cb_relations.stateChanged.connect(lambda: setUnsetUserRelations(table = user_relations_ui.tbl_relations, relation_column = 9, checkbox_relation = user_relations_ui.cb_relations))
+
+		# Window to show user lists
+		user_lists_window = QtGui.QDialog(parent=window)
+		user_lists_ui = lists_window.Ui_Dialog()
+		user_lists_ui.setupUi(user_lists_window)
+		# Connect buttonBox
+		ui.pb_lists_view.clicked.connect(show_lists)
+
+		# Window to show user collections
+		user_collections_window = QtGui.QDialog(parent=window)
+		user_collections_ui = collections_window.Ui_Dialog()
+		user_collections_ui.setupUi(user_collections_window)
+		# Connect buttonBox
+		ui.pb_collections_view.clicked.connect(show_collections)
+
+		# Window to show followers
+		user_followers_window = QtGui.QDialog(parent=window)
+		user_followers_ui = followers_window.Ui_Dialog()
+		user_followers_ui.setupUi(user_followers_window)
+		# Connect buttonBox
+		ui.pb_followers_view.clicked.connect(show_followers)
+
+		# Window to show friends
+		user_friends_window = QtGui.QDialog(parent=window)
+		user_friends_ui = friends_window.Ui_Dialog()
+		user_friends_ui.setupUi(user_friends_window)
+		# Connect buttonBox
+		ui.pb_friends_view.clicked.connect(show_friends)
+
+		# Initialize search filters
+		reset_filters()
+
+		# Connect pushButton
+		ui.pb_select_users_file.clicked.connect(selectFile)
+		ui.pb_reset_filters.clicked.connect(reset_filters)
+		ui.pb_last_results.clicked.connect(selectLastFile)
+		ui.pb_relations.clicked.connect(showUserRelations)
+
+		# Connect buttonBox
+		btn = ui.buttonBox.button(QtGui.QDialogButtonBox.Apply)
+		btn.clicked.connect(get_information_from_interface)
+
+		# Connect checkbox : HTML output file
+		ui.cb_file_screen_name.stateChanged.connect(setHTMLOutputFile)
+
+		# Connect checkbox : KML output file
+		ui.cb_kml_file_screen_name.stateChanged.connect(setKMLOutputFile)
+
+		# Connect radio button (Target of Analysis): User
+		ui.rb_user.toggled.connect(enableOperations)
+
+		window.show()
+
+		app.exec_()
+
+	except Exception as e:
+		show_ui_message(str(e) + "<br>", "ERROR", 1)
+
