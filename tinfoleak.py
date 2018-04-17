@@ -107,7 +107,7 @@ class Configuration():
 			# Twitter API
 			self.client = oauth.Client(consumer, access_token)
 
-		except Exception, e:
+		except Exception as e:
 			show_error(e)
 			sys.exit(1)
 
@@ -139,7 +139,7 @@ class User:
 			self.meta = ""
 			self.protected = ""
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -203,7 +203,7 @@ class User:
 			self.listed_count = str(api.listed_count)
 			self.lang = str(api.lang)
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -229,7 +229,7 @@ class Sources:
 			self.sources_firsttweet = {}
 			self.sources_lasttweet = {}
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -256,7 +256,7 @@ class Sources:
 				self.sources_total_count += 1
 				self.sources_lasttweet[tweet.source] = tweet.id
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -266,7 +266,7 @@ class Sources:
 			for s in self.sources:
 				self.sources_percent[s[0]] = round((self.sources_count[s[0]] * 100.0) / self.sources_total_count, 1)
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -334,7 +334,7 @@ class Lists:
 								cursor = response_dictionary['next_cursor']
 					else:
 						cursor = 0
-				except Exception, e:
+				except Exception as e:
 					rate_limit = show_error(e)
 					if rate_limit:
 						show_ui_message("Waiting...", "INFO", br=1)
@@ -347,7 +347,7 @@ class Lists:
 
 			csvFile.close()
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -399,7 +399,7 @@ class Lists:
 							cursor = response_dictionary['next_cursor']
 					else:
 						cursor = 0
-				except Exception, e:
+				except Exception as e:
 					rate_limit = show_error(e)
 					if rate_limit:
 						show_ui_message("Waiting...", "INFO", br=1)
@@ -411,7 +411,7 @@ class Lists:
 
 			csvFile.close()
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -461,7 +461,7 @@ class Lists:
 						user_lists += 1
 						csvWriter.writerow([user_lists, user_list['id_str'], user_list['name'], user_list['description'], user_list['member_count'], user_list['subscriber_count'], user_list['uri'], user_list['user']['screen_name'], user_list['user']['created_at'], user_list['user']['name'], user_list['user']['description'], user_list['user']['followers_count'], user_list['user']['friends_count']])
 						csvFile.flush()
-					except Exception, e:
+					except Exception as e:
 						rate_limit = show_error(e)
 						if rate_limit:
 							show_ui_message("Waiting...", "INFO", br=1)
@@ -473,7 +473,7 @@ class Lists:
 
 			csvFile.close()
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -526,7 +526,7 @@ class Collections:
 								name = response_dictionary['objects']['timelines'][str(timeline)]['name']
 								try:
 									description = response_dictionary['objects']['timelines'][str(timeline)]['description']
-								except Exception, e:
+								except Exception as e:
 									description = ""
 								url = response_dictionary['objects']['timelines'][str(timeline)]['collection_url']
 
@@ -538,7 +538,7 @@ class Collections:
 						else:
 							cursor = 0
 
-				except Exception, e:
+				except Exception as e:
 					rate_limit = show_error(e)
 					if rate_limit:
 						show_ui_message("Waiting...", "INFO", br=1)
@@ -550,7 +550,7 @@ class Collections:
 
 			csvFile.close()
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -602,7 +602,7 @@ class Activity:
 			self.activity_hours["22"] = 0
 			self.activity_hours["23"] = 0
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -653,7 +653,7 @@ class Activity:
 			self.activity_url_percent = round((self.activity_url * 100.0) / self.activity_count, 1)
 			self.activity_media_percent = round((self.activity_media * 100.0) / self.activity_count, 1)
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -716,12 +716,12 @@ class Followers:
 								f.write(img)
 								f.close()
 
-						except Exception, e:
+						except Exception as e:
 							pass
 					else:
 						break
 
-				except Exception, e:
+				except Exception as e:
 					rate_limit = show_error(e)
 					if rate_limit:
 						show_ui_message("Waiting...", "INFO", br=1)
@@ -732,7 +732,7 @@ class Followers:
 
 			csvFile.close()
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -784,12 +784,12 @@ class Friends:
 								f = open(image, 'wb')
 								f.write(img)
 								f.close()
-						except Exception, e:
+						except Exception as e:
 							pass
 					else:
 						break
 
-				except Exception, e:
+				except Exception as e:
 					rate_limit = show_error(e)
 					if rate_limit:
 						show_ui_message("Waiting...", "INFO", br=1)
@@ -800,7 +800,7 @@ class Friends:
 
 			csvFile.close()
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -830,7 +830,7 @@ class Social_Networks:
 			self.user_sn = {}
 			self.see_again = 1
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -1250,7 +1250,7 @@ class Social_Networks:
 
 			return username, link, pic, name, info
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -1369,7 +1369,7 @@ class Social_Networks:
 														self.user_sn[status.user.screen_name][11][3] = name
 														self.user_sn[status.user.screen_name][11][4] = info
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -1412,7 +1412,7 @@ class Geolocation:
 			self.media_info = {}
 			self.toploc = []
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -1537,7 +1537,7 @@ class Geolocation:
 			else:
 				sinfo = ""
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -1577,7 +1577,7 @@ class Geolocation:
 				time = tweet.created_at.time()
 				self.kml_info.append([geo, content, photo, place, date, time])
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -1622,7 +1622,7 @@ class Geolocation:
 			f.write(kml_file_content)
 			f.close()
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -1729,7 +1729,7 @@ class Geolocation:
 
 				self.toploc.append([str(value), str(startdate.strftime('%m/%d/%Y')), str(enddate.strftime('%m/%d/%Y')), str(starttime), str(endtime), mo_day, tu_day, we_day, th_day, fr_day, sa_day, su_day, coordinates, location, fav, day, mo, tu, we, th, fr, sa, su, color])
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -1754,7 +1754,7 @@ class Search_GeoTweets:
 			self.user_keywords = {}  # { 'user': 'keywords' }
 			self.adv_media_count = 0  # total images
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -1877,13 +1877,13 @@ class Search_GeoTweets:
 							try:
 								extended_entities = \
 									status.retweeted_status.extended_entities['media'][0]['video_info']['variants']
-							except Exception, e:
+							except Exception as e:
 								extended_entities = ""
 						else:
 							medias = status.entities['media']
 							try:
 								extended_entities = status.extended_entities['media'][0]['video_info']['variants']
-							except Exception, e:
+							except Exception as e:
 								extended_entities = ""
 
 						for m in medias:
@@ -1984,7 +1984,7 @@ class Search_GeoTweets:
 
 			return results
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2210,7 +2210,7 @@ class Search_GeoTweets:
 
 			return results
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -2241,7 +2241,7 @@ class Hashtags:
 			self.hashtags_list = []
 			self.hashtags_users = {}
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2261,7 +2261,7 @@ class Hashtags:
 
 				try:
 					fav_count = tweet.retweeted_status.favorite_count
-				except Exception, e:
+				except Exception as e:
 					fav_count = tweet.favorite_count
 
 				for i in tweet.entities['hashtags']:
@@ -2302,7 +2302,7 @@ class Hashtags:
 						self.hashtags_users[screen_name].extend(self.hashtags_list)
 					else:
 						self.hashtags_users[screen_name] = self.hashtags_list
-				except Exception, e:
+				except Exception as e:
 					self.hashtags_users[screen_name] = self.hashtags_list
 
 				for h in tweet.entities['hashtags']:
@@ -2324,7 +2324,7 @@ class Hashtags:
 						self.hashtags_results2 += 1
 						self.hashtags_owner[upper] = screen_name
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2368,7 +2368,7 @@ class Mentions:
 			self.mentions_users = {}
 			self.mentions_profileimg = {}
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2388,7 +2388,7 @@ class Mentions:
 
 				try:
 					fav_count = tweet.retweeted_status.favorite_count
-				except Exception, e:
+				except Exception as e:
 					fav_count = tweet.favorite_count
 
 				for i in tweet.entities['user_mentions']:
@@ -2427,7 +2427,7 @@ class Mentions:
 						self.mentions_users[screen_name].extend(self.mentions_list)
 					else:
 						self.mentions_users[screen_name] = self.mentions_list
-				except Exception, e:
+				except Exception as e:
 					self.mentions_users[screen_name] = self.mentions_list
 
 
@@ -2448,7 +2448,7 @@ class Mentions:
 						self.mentions_lastdate[upper] = tweet.created_at
 						self.mentions_name[upper] = str(m['name'].encode('utf-8'))
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2476,7 +2476,7 @@ class User_Tweets:
 
 			self.tweets_find = []  # [[text, date, time, ID, screen_name, profile_image_url, location, name], ...]
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2557,7 +2557,7 @@ class User_Tweets:
 
 			self.tweets_find.append([tweet.text, tweet.created_at.strftime('%m/%d/%Y'), tweet.created_at.time(), tweet.id, screen_name, profile_image_url, location, name, media_url, media_type])
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -2574,7 +2574,7 @@ class Words_Tweets:
 			self.top_dates = {}
 			self.total_occurrences = 0
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2669,7 +2669,7 @@ class Words_Tweets:
 						self.top_words[word] = freq
 						self.top_dates[word] = [tweet.created_at, tweet.created_at]
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -2683,7 +2683,7 @@ class Favorites:
 
 			self.favorites_tweets = []
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2716,14 +2716,14 @@ class Favorites:
 								self.favorites_tweets.append([tweet.id, tweet_date, tweet_time, tweet.user.screen_name, profile_image_url, tweet.user.name, media_url, tweet.text])
 					page += 1
 
-				except Exception, e:
+				except Exception as e:
 					rate_limit = show_error(e)
 					if rate_limit:
 						show_ui_message("Waiting...", "INFO", br=1)
 						time.sleep(60)
 						continue
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -2738,7 +2738,7 @@ class User_Conversations:
 			self.conversations = {}  # {'tweet1_id1': '[[tweet1], [tweet2], ..., [tweet_n]], 'tweet2_id2': '[[tweet1], [tweet2], ..., [tweet_n]], ...}
 			self.processed_tweets = []
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2758,7 +2758,7 @@ class User_Conversations:
 
 			return tweet_to_append
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2824,7 +2824,7 @@ class User_Conversations:
 
 							tweet = tweet_in_reply
 
-						except Exception, e:
+						except Exception as e:
 							show_error(e)
 							add_tweet_conversation = 0
 
@@ -2833,7 +2833,7 @@ class User_Conversations:
 				else:
 					add_tweet_conversation = 0
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e), "ERROR", br=1)
 
 
@@ -2849,7 +2849,7 @@ class User_Relations:
 			self.following_users = []  # Friends
 			self.protected_tweets = []  # Tweets
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -2899,7 +2899,7 @@ class User_Relations:
 								following_user.set_user_information(api_following)
 								self.following_users.append(following_user)
 
-						except Exception, e:
+						except Exception as e:
 							pass
 
 					n+=1
@@ -2951,7 +2951,7 @@ class User_Relations:
 									following_user.set_user_information(api_following)
 									self.following_users.append(following_user)
 
-					except Exception, e:
+					except Exception as e:
 						pass
 
 				for sname in followed:
@@ -2965,7 +2965,7 @@ class User_Relations:
 								api_following = api.get_user(sname)
 								following_user.set_user_information(api_following)
 								self.following_users.append(following_user)
-						except Exception, e:
+						except Exception as e:
 							pass
 
 					n+=1
@@ -2987,7 +2987,7 @@ class User_Relations:
 								api_followedby = api.get_user(sname)
 								followedby_user.set_user_information(api_followedby)
 								self.followedby_users.append(followedby_user)
-						except Exception, e:
+						except Exception as e:
 							pass
 
 					n+=1
@@ -3000,7 +3000,7 @@ class User_Relations:
 
 			show_ui_message("Relations: OK", "INFO", 1)
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -3045,7 +3045,7 @@ class User_Images:
 				"TGNT": "Taligent Inc.",
 			}
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -3126,7 +3126,7 @@ class User_Images:
 
 				self.pic.append([media_url, image, str(tweet.created_at.strftime('%m/%d/%Y')), str(tweet.created_at.time()), str(tweet.id), screen_name_orig, profile_image_url_orig, str(created_at.strftime('%m/%d/%Y')), str(created_at.time()), media_type, screen_name, profile_image_url, source_app, source_rt, source_likes, in_reply_to_screen_name])
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 	# ----------------------------------------------------------------------
@@ -3195,11 +3195,11 @@ class User_Images:
 						longitude_value = dms_to_decimal(*metadata.__getitem__("Exif.GPSInfo.GPSLongitude").value + [metadata.__getitem__("Exif.GPSInfo.GPSLongitudeRef").value]);
 
 						self.meta_coordinates[p[0]] = str(latitude_value) + ", " + str(longitude_value)
-					except Exception, e:
+					except Exception as e:
 						# No GPS information
 						pass
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e), "ERROR", br=1)
 
 	# ----------------------------------------------------------------------
@@ -3280,10 +3280,10 @@ class User_Images:
 					latitude_value = dms_to_decimal(*metadata.__getitem__("Exif.GPSInfo.GPSLatitude").value + [metadata.__getitem__("Exif.GPSInfo.GPSLatitudeRef").value]);
 					longitude_value = dms_to_decimal(*metadata.__getitem__("Exif.GPSInfo.GPSLongitude").value + [metadata.__getitem__("Exif.GPSInfo.GPSLongitudeRef").value]);
 
-				except Exception, e:
+				except Exception as e:
 					pass
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -3302,7 +3302,7 @@ class Parameters:
 			self.program_author_companyname = "Internet Security Auditors"
 			self.html_output_directory = "Output_Reports"
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
@@ -3376,7 +3376,7 @@ def is_valid(tweet):
 
 		return valid
 
-	except Exception, e:
+	except Exception as e:
 		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
@@ -3394,7 +3394,7 @@ def get_video_url(url):
 
 		return video_url
 
-	except Exception, e:
+	except Exception as e:
 		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
@@ -3470,7 +3470,7 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 			try:
 				for r in res:
 					all_conv[res[0][0]].append(r)
-			except Exception, e:
+			except Exception as e:
 				all_conv[res[0][0]] = res
 
 		user_conversations.conversations = all_conv
@@ -3706,7 +3706,7 @@ def generates_HTML_file(parameters, user, source, social, hashtag, mention, geol
 		f.write(html_content.encode('utf-8'))
 		f.close()
 
-	except Exception, e:
+	except Exception as e:
 		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
@@ -3725,7 +3725,7 @@ def save_image(url, username):
 			f.write(img)
 			f.close()
 
-	except Exception, e:
+	except Exception as e:
 		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
@@ -3812,7 +3812,7 @@ def get_information_for_user_target():
 			ui.tbl_targets_analyzed.resizeColumnsToContents()
 			ui.tbl_targets_analyzed.setRowHeight(0, 60)
 
-		except Exception, e:
+		except Exception as e:
 			show_ui_message(str(e), "INFO", 1)
 
 		results = 0
@@ -4030,7 +4030,7 @@ def get_information_for_user_target():
 		show_ui_message("Report: OK", "INFO", 1)
 		show_ui_message("Your HTML report: <b>" + html_dir + "</b><br>", "INFO", 1)
 
-	except Exception, e:
+	except Exception as e:
 		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 
@@ -4277,7 +4277,7 @@ def show_ui_message(message, type, br):
 
 		return datenow, timenow
 
-	except Exception, e:
+	except Exception as e:
 		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
@@ -4291,7 +4291,7 @@ def show_alert_field(field, message, type, br):
 		field.setStyleSheet("background-color: rgb(255, 255, 255);")
 		field.setFocus()
 
-	except Exception, e:
+	except Exception as e:
 		show_ui_message(str(e) + "<br>", "ERROR", 1)
 
 # ----------------------------------------------------------------------
@@ -4315,7 +4315,7 @@ def show_error(error):
 
 		return rate_limit
 
-	except Exception, e:
+	except Exception as e:
 		print "\t\t" + str(error) + "\n"
 		sys.exit(1)
 
@@ -5671,4 +5671,3 @@ if __name__ == '__main__':
 
 	except Exception as e:
 		show_ui_message(str(e) + "<br>", "ERROR", 1)
-
