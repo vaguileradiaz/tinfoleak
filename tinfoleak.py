@@ -4300,15 +4300,15 @@ def show_error(error):
 	try:
 
 		rate_limit = 0
-		print "\n\n\t\tOops! Something went wrong:"
+		print("\n\n\t\tOops! Something went wrong:")
 
 		if str(error).find("Name or service not known") >= 0:
-			print "\t\tDo you have Internet connection?"
+			print("\t\tDo you have Internet connection?")
 		else:
 			if str(error).find("Could not authenticate you") >= 0:
-				print "\t\tYou need to assign value to OAuth tokens. Please, read the README.txt file for more information."
+				print("\t\tYou need to assign value to OAuth tokens. Please, read the README.txt file for more information.")
 			else:
-				print "\t\t" + str(sys.exc_info()[1][0][0]['message'])
+				print("\t\t" + str(sys.exc_info()[1][0][0]['message']))
 				if "Rate limit exceeded" in str(sys.exc_info()[1][0][0]['message']):
 					rate_limit = 1
 		print
@@ -4316,7 +4316,7 @@ def show_error(error):
 		return rate_limit
 
 	except Exception as e:
-		print "\t\t" + str(error) + "\n"
+		print("\t\t" + str(error) + "\n")
 		sys.exit(1)
 
 # ----------------------------------------------------------------------
