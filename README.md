@@ -1,4 +1,10 @@
 # tinfoleak
+
+[![Build Status](https://img.shields.io/github/forks/vaguileradiaz/tinfoleak.svg)](https://github.com/vaguileradiaz/tinfoleak)
+[![Build Status](https://img.shields.io/github/stars/vaguileradiaz/tinfoleak.svg)](https://github.com/vaguileradiaz/tinfoleak)
+[![License](https://img.shields.io/github/license/vaguileradiaz/tinfoleak.svg)](https://github.com/vaguileradiaz/tinfoleak)
+[![Rawsec's CyberSecurity Inventory](https://inventory.rawsec.ml/img/badges/Rawsec-inventoried-FF5050_flat.svg)](https://inventory.rawsec.ml/tools.html#tinfoleak)
+
 The most complete open-source tool for Twitter intelligence analysis
 
 ### Introduction
